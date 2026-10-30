@@ -8,9 +8,16 @@ import {
   IngredientConflict,
   SkinGuidanceSchema,
   SkinGuidance,
+  BarberCardSchema,
+  BarberCard,
   AiModelResponse,
 } from "@/lib/ai/types";
 import { runSafetyScreen } from "@/lib/ai/safety";
+import {
+  getFallbackSkinGuidance,
+  getFallbackBarberCard,
+  containsForbiddenScoring,
+} from "@/lib/ai/vision";
 
 /**
  * Curated Fallback 30-Day Roadmap (Zero-Downtime Guarantee)
@@ -270,7 +277,151 @@ Return strictly valid JSON:
 }
 
 /**
- * 3. Bilingual AI Coach Chat (muse-spark-1.3)
+ * 3. Optional Skin/Hair Vision Guidance (muse-spark-1.3)
+ * Cautious adult-only guidance. Never emits attractiveness scores or diagnoses.
+ * The photo itself stays in private storage; only a short-lived analysis
+ * intent (purpose + self-reported hints) reaches the text adapter here.
+ */
+export async function analyzeSkinHairVision(input: {
+  purpose: "skin_guidance" | "hair_guidance";
+  skinTypeHint?: string;
+  hairTextureHint?: string;
+  locale?: string;
+}): Promise<AiModelResponse<SkinGuidance>> {
+  const startTime = Date.now();
+
+  const systemPrompt = `You are AinA Coded, a cautious skin & hair guidance assistant for adults (18+) in Bangladesh.
+CRITICAL SAFETY RULES:
+- Never provide attractiveness scores, beauty ratings, face rankings, or glow-up percentages.
+- Never diagnose diseases or prescribe medication. Educational guidance only.
+- Focus on skin barrier health, hydration, grooming consistency, and personal style.
+- Calibrate for Bangladesh humidity, dust, sun, and tap water.
+Return strictly valid JSON:
+{
+  "skinType": "oily" | "dry" | "combination" | "sensitive" | "normal",
+  "faceShape": "oval" | "round" | "square" | "heart" | "oblong" | "diamond",
+  "hairTexture": "straight" | "wavy" | "curly" | "coily" | "thinning",
+  "hydrationLevel": "low" | "balanced" | "high",
+  "primaryConcerns": ["short concern"],
+  "recommendedFocus": "actionable focus text",
+  "confidence": 0.0,
+  "safetyNote": "Educational guidance only. Not medical diagnosis."
+}`;
+
+  const userPrompt = `Provide cautious ${input.purpose === "hair_guidance" ? "hair & scalp" : "skin & hair"} guidance.
+Self-reported skin type hint: ${input.skinTypeHint || "unknown"}
+Self-reported hair texture hint: ${input.hairTextureHint || "unknown"}
+Language: ${input.locale === "bn" ? "Bangla" : "English"}
+Photo context: private adult self-photo supplied for guidance only (not public, not scored).`;
+
+  try {
+    const metaRes = await callMetaModel({
+      model: META_MODELS.TEXT,
+      systemPrompt,
+      userPrompt,
+      jsonMode: true,
+    });
+
+    const raw: unknown = JSON.parse(metaRes.text);
+    if (containsForbiddenScoring(raw)) {
+      throw new Error("Vision output contained forbidden scoring fields.");
+    }
+    const parsed = SkinGuidanceSchema.safeParse(raw);
+    if (parsed.success) {
+      return {
+        data: parsed.data,
+        model: metaRes.model,
+        provider: metaRes.cached ? "cache" : "meta",
+        latencyMs: Date.now() - startTime,
+        inputTokens: metaRes.inputTokens,
+        outputTokens: metaRes.outputTokens,
+        cached: metaRes.cached,
+      };
+    }
+    console.warn("[Router] Vision JSON validation failed:", parsed.error);
+  } catch (err) {
+    console.warn("[Router] muse-spark-1.3 vision failed, using safe fallback:", err);
+  }
+
+  return {
+    data: getFallbackSkinGuidance({
+      skinType: input.skinTypeHint,
+      hairTexture: input.hairTextureHint,
+    }),
+    model: "muse-spark-1.3-vision-fallback",
+    provider: "fallback",
+    latencyMs: Date.now() - startTime,
+    cached: true,
+  };
+}
+
+/**
+ * 4. Barber Reference Card (muse-image)
+ * Produces bilingual barber instructions plus a visual reference description.
+ * The generated visual is a haircut reference only — never a face score.
+ */
+export async function generateBarberCard(input: {
+  guidance?: Partial<SkinGuidance>;
+  desiredStyle?: string;
+  locale?: string;
+}): Promise<AiModelResponse<BarberCard & { imageModel: string; imagePrompt: string }>> {
+  const startTime = Date.now();
+  const fallback = getFallbackBarberCard(input.guidance);
+
+  const systemPrompt = `You are AinA's Barber Card stylist powered by muse-image.
+Create a practical haircut reference card a user can show a local barber in Bangladesh.
+CRITICAL SAFETY RULES:
+- Never provide attractiveness scores, face ratings, or rankings.
+- Keep the hairline natural; practical, humidity-friendly styles only.
+Return strictly valid JSON matching the BarberCard schema (styleNameEn, styleNameBn, faceShape, hairTexture, topLength, sidesLength, fadeType, instructionsEn, instructionsBn, maintenanceEn, maintenanceBn, visualDescription, confidence).`;
+
+  const userPrompt = `Create a barber reference card.
+Face shape: ${input.guidance?.faceShape || fallback.faceShape || "oval"}
+Hair texture: ${input.guidance?.hairTexture || fallback.hairTexture || "wavy"}
+Desired style: ${input.desiredStyle || fallback.styleNameEn}
+Language: ${input.locale === "bn" ? "Bangla first" : "English first"}`;
+
+  const imagePrompt = `Barber reference card visual, front side and back views: ${fallback.visualDescription}`;
+
+  try {
+    const res = await callMetaModel({
+      model: META_MODELS.IMAGE,
+      systemPrompt,
+      userPrompt,
+      jsonMode: true,
+    });
+
+    const raw: unknown = JSON.parse(res.text);
+    if (!containsForbiddenScoring(raw)) {
+      const parsed = BarberCardSchema.safeParse(raw);
+      if (parsed.success) {
+        return {
+          data: { ...parsed.data, imageModel: META_MODELS.IMAGE, imagePrompt },
+          model: res.model,
+          provider: res.cached ? "cache" : "meta",
+          latencyMs: Date.now() - startTime,
+          inputTokens: res.inputTokens,
+          outputTokens: res.outputTokens,
+          cached: res.cached,
+        };
+      }
+    }
+    console.warn("[Router] Barber card JSON validation failed, using fallback card.");
+  } catch (err) {
+    console.warn("[Router] muse-image barber card failed, using fallback card:", err);
+  }
+
+  return {
+    data: { ...fallback, imageModel: META_MODELS.IMAGE, imagePrompt },
+    model: "muse-image-fallback",
+    provider: "fallback",
+    latencyMs: Date.now() - startTime,
+    cached: true,
+  };
+}
+
+/**
+ * 5. Bilingual AI Coach Chat (muse-spark-1.3)
  */
 export async function chatWithCoach(input: {
   message: string;

@@ -22,7 +22,7 @@ The autonomous build engine iterates through this queue sequentially. Each promp
 - [x] **PROMPT 05 — Interactive CSS 3D Lookbook Hero & AinA Drip (`sam-3.1` Wardrobe Cutout):**
   Build `components/lookbook/Lookbook3D.tsx` using pure HTML/CSS `preserve-3d` and vanilla JS pointer/gyro tilt (`<15KB`, 60fps on budget Android) with floating pill tags (`• Relaxed Fit`, `• Everyday`), giant ghost typography (`PRIME YOU` / `WEAR IT LOUD`), floor reflection, and `01 / 04` counter. Add an interactive "Upload Item (`SAM 3.1` Auto-Cutout)" demo button that segments a clothing item and places it into a 3D parallax card.
 
-- [ ] **PROMPT 06 — AinA Coded: Optional Skin/Hair Vision (`muse-spark-1.3`) & Barber Card Generator (`muse-image`):**
+- [x] **PROMPT 06 — AinA Coded: Optional Skin/Hair Vision (`muse-spark-1.3`) & Barber Card Generator (`muse-image`):**
   Build the Cerulean (`#007BA7`) scanning overlay UI, private photo upload intent, `muse-spark-1.3` vision analysis (returning skin type, face shape, hair texture, and confidence level with zero attractiveness scores), and a "Generate Barber Reference Card (`muse-image`)" button that creates a visual haircut guide + Bangla/English instructions for the user's local barber.
 
 - [ ] **PROMPT 07 — 30-Day Roadmap Engine (`muse-spark-1.3`) & Ingredient Conflict Checker (`muse-wonder`):**

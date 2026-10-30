@@ -44,6 +44,23 @@ export const SkinGuidanceSchema = z.object({
 });
 export type SkinGuidance = z.infer<typeof SkinGuidanceSchema>;
 
+export const BarberCardSchema = z.object({
+  styleNameEn: z.string().min(3).max(80),
+  styleNameBn: z.string().min(3).max(80),
+  faceShape: z.enum(["oval", "round", "square", "heart", "oblong", "diamond"]).optional(),
+  hairTexture: z.enum(["straight", "wavy", "curly", "coily", "thinning"]).optional(),
+  topLength: z.string().min(2).max(80),
+  sidesLength: z.string().min(2).max(80),
+  fadeType: z.string().min(2).max(80),
+  instructionsEn: z.array(z.string().min(3).max(200)).min(3).max(8),
+  instructionsBn: z.array(z.string().min(3).max(200)).min(3).max(8),
+  maintenanceEn: z.string().min(5).max(400),
+  maintenanceBn: z.string().min(5).max(400),
+  visualDescription: z.string().min(10).max(600),
+  confidence: z.number().min(0).max(1),
+});
+export type BarberCard = z.infer<typeof BarberCardSchema>;
+
 export const IngredientConflictSchema = z.object({
   isConflict: z.boolean(),
   severity: z.enum(["none", "low", "medium", "high"]),

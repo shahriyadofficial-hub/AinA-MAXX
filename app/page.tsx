@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Sparkles, Compass, Flame, Shirt, ShoppingBag, ShieldCheck, ArrowRight, Zap, Target } from "lucide-react";
+import { Sparkles, Compass, Flame, Shirt, ShoppingBag, ShieldCheck, ArrowRight, Zap, Target, ScanFace } from "lucide-react";
 import AinaLogo from "@/components/brand/AinaLogo";
 
 export default function HomePage() {
@@ -103,6 +103,19 @@ export default function HomePage() {
             <div>
               <h3 className="text-sm font-bold text-white font-display">AinA Drip</h3>
               <p className="text-[11px] text-neutral-400">3D Lookbook & Cutouts</p>
+            </div>
+          </Link>
+
+          <Link
+            href="/coded"
+            className="glass-panel glass-panel-hover rounded-aina-sm p-4 flex flex-col justify-between h-32 group"
+          >
+            <div className="w-9 h-9 rounded-xl bg-aina-cerulean/15 text-aina-light-cerulean flex items-center justify-center group-hover:scale-110 transition-transform">
+              <ScanFace className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white font-display">AinA Coded</h3>
+              <p className="text-[11px] text-neutral-400">Private skin & hair vision</p>
             </div>
           </Link>
 
