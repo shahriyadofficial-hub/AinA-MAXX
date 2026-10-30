@@ -16,7 +16,7 @@ The autonomous build engine iterates through this queue sequentially. Each promp
   2. Automatic exponential backoff & quota sleep handler (`onQuotaExhausted`: parses `Retry-After` / `x-ratelimit-reset`, logs countdown, waits and retries automatically).
   3. Zod schema validation (`RoadmapDraftSchema`, `SkinGuidanceSchema`, `IngredientConflictSchema`) and deterministic safety filter (`lib/ai/safety.ts`).
 
-- [ ] **PROMPT 04 — Adult 18+ Auth, PDPA 2026 Consent Registry & Bilingual Onboarding Quiz:**
+- [x] **PROMPT 04 — Adult 18+ Auth, PDPA 2026 Consent Registry & Bilingual Onboarding Quiz:**
   Implement `/api/v1/consents` and `/api/v1/onboarding`. Build the DOB age-gate (under-13 blocked; 13-17 routed to public read-only safe mode; 18+ full access), revocable purpose-specific consent toggles (`photo_processing`, `health_related_personalization`), and the 5-step Bangla/English onboarding quiz (Goals, Skin/Hair type, BDT Budget Tier, Daily Minutes, Language).
 
 - [ ] **PROMPT 05 — Interactive CSS 3D Lookbook Hero & AinA Drip (`sam-3.1` Wardrobe Cutout):**
