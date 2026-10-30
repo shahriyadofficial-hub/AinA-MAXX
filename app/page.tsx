@@ -2,8 +2,26 @@ import React from "react";
 import Link from "next/link";
 import { Sparkles, Compass, Flame, Shirt, ShoppingBag, ShieldCheck, ArrowRight, Zap, Target, ScanFace, MessageCircle } from "lucide-react";
 import AinaLogo from "@/components/brand/AinaLogo";
+import { MirrorReportCard } from "@/components/maxx/MirrorReportCard";
+import { Leaderboard } from "@/components/maxx/Leaderboard";
+import {
+  INITIAL_STREAK,
+  DEMO_LEADERBOARD,
+  rankLeaderboard,
+  buildMirrorReport,
+} from "@/lib/gamification/maxx";
+import { getCuratedFallbackRoadmap } from "@/lib/roadmap/fallback";
 
 export default function HomePage() {
+  const fallbackTasks = getCuratedFallbackRoadmap().tasks.map((t) => ({ ...t, completed: false }));
+  const mirrorReport = buildMirrorReport({
+    weekLabel: "Week 1",
+    tasks: fallbackTasks,
+    xpEarned: 0,
+    streak: INITIAL_STREAK,
+  });
+  const leaderboard = rankLeaderboard(DEMO_LEADERBOARD);
+
   return (
     <div className="space-y-6">
       {/* Brand Hero Card */}
@@ -155,6 +173,15 @@ export default function HomePage() {
             </div>
           </Link>
         </div>
+      </section>
+
+      {/* AinA Maxx — Mirror Report & Effort Leaderboard */}
+      <section className="space-y-3">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 px-1 font-display">
+          AinA Maxx · Gamification
+        </h2>
+        <MirrorReportCard report={mirrorReport} />
+        <Leaderboard entries={leaderboard} />
       </section>
 
       {/* Safety & Legal Guardrail Banner */}

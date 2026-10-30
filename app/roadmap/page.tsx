@@ -61,6 +61,19 @@ function fallbackResponse(): RoadmapResponse {
   };
 }
 
+interface CompletionResponse {
+  data: {
+    taskId: string;
+    action: string;
+    xpAwarded: number;
+    totalXp: number;
+    idempotentReplay: boolean;
+    streak: { currentStreak: number; freezeTokens: number } | null;
+  };
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export default function RoadmapPage() {
   const [locale, setLocale] = useState<Locale>("en");
   const bn = locale === "bn";
@@ -71,6 +84,7 @@ export default function RoadmapPage() {
   const [tab, setTab] = useState<PeriodTab>("am");
   const [generating, setGenerating] = useState(false);
   const [notice, setNotice] = useState("");
+  const [xpNotice, setXpNotice] = useState("");
 
   const tasks = useMemo<RoadmapTaskLike[]>(
     () =>
@@ -140,14 +154,43 @@ export default function RoadmapPage() {
     }
   }
 
-  function toggleTask(task: RoadmapTaskLike) {
+  async function toggleTask(task: RoadmapTaskLike) {
     const id = task.id ?? "";
+    const wasDone = completedIds.has(id) || task.completed === true;
+
+    // Optimistic local toggle (works for curated/local tasks too).
     setCompletedIds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
+      if (wasDone) next.delete(id);
       else next.add(id);
       return next;
     });
+
+    // Server-side idempotent XP for persisted roadmap tasks.
+    if (!UUID_RE.test(id)) return;
+    try {
+      const res = await fetch(`/api/v1/tasks/${id}/completion`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: wasDone ? "skipped" : task.isRestDay ? "rest_day" : "completed",
+        }),
+      });
+      const json = (await res.json()) as CompletionResponse;
+      if (res.ok && json.data && !wasDone) {
+        setXpNotice(
+          json.data.idempotentReplay
+            ? bn
+              ? "ইতিমধ্যে গণনা করা হয়েছে — XP দ্বিগুণ হয়নি।"
+              : "Already counted — XP is never double-awarded."
+            : bn
+              ? `+${json.data.xpAwarded} XP! মোট ${json.data.totalXp} XP · স্ট্রিক ${json.data.streak?.currentStreak ?? 1} দিন`
+              : `+${json.data.xpAwarded} XP! Total ${json.data.totalXp} XP · Streak ${json.data.streak?.currentStreak ?? 1} day(s)`
+        );
+      }
+    } catch {
+      // Local progress is kept even if the server is unreachable.
+    }
   }
 
   const visibleTasks =
@@ -298,7 +341,7 @@ export default function RoadmapPage() {
                   <input
                     type="checkbox"
                     checked={done}
-                    onChange={() => toggleTask(task)}
+                    onChange={() => void toggleTask(task)}
                     className="peer sr-only"
                     aria-label={task.title}
                   />
@@ -341,10 +384,16 @@ export default function RoadmapPage() {
           })}
         </div>
 
+        {xpNotice && (
+          <p role="status" className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-300">
+            {xpNotice}
+          </p>
+        )}
+
         <p className="text-xs leading-relaxed text-neutral-500">
           {bn
-            ? "চেকবক্স এখন এই ডিভাইসে অগ্রগতি দেখায়; সার্ভার XP ও স্ট্রিক আসছে পরের ধাপে (AinA Maxx)।"
-            : "Checkboxes preview progress on this device; server XP & streaks arrive in the next phase (AinA Maxx)."}
+            ? "সম্পন্ন কাজে সার্ভার-যাচাইকৃত XP ও Mirror Streak যোগ হয় (AinA Maxx)। একই কাজে দ্বিগুণ XP কখনো নয়।"
+            : "Completed tasks earn server-verified XP and Mirror Streak progress (AinA Maxx). The same task never awards XP twice."}
         </p>
       </section>
 

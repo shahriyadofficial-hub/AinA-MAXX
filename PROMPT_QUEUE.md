@@ -31,7 +31,7 @@ The autonomous build engine iterates through this queue sequentially. Each promp
 - [x] **PROMPT 08 — Bilingual AI Coach (`muse-spark-1.3` + `gemini-2.5-flash`) & Red-Flag Escalation:**
   Build `/api/v1/ai/coach` and the slide-out Coach Drawer. Support one-tap Bangla/English switching, context injection from the active 30-day roadmap, automatic red-flag escalation (severe acne/hair loss -> verified dermatologist advisor card), and visible model telemetry badges (`Powered by Meta Muse Spark 1.3 · Safety verified`) for hackathon judges.
 
-- [ ] **PROMPT 09 — Gamification (`AinA Maxx`), Leaderboard, Community (`Vibe`) & Curated BDT Shop:**
+- [x] **PROMPT 09 — Gamification (`AinA Maxx`), Leaderboard, Community (`Vibe`) & Curated BDT Shop:**
   Build `/api/v1/tasks/[id]/completion` with server-side idempotent XP (`xp_events`), `Mirror Streak` counter with Rest Day / Freeze tokens, Effort-Only Weekly Leaderboard, privacy-safe Shareable Weekly Mirror Report card (no face photo by default), moderated `AinA Vibe` feed, and `AinA Shop` with BDT prices and Routine Bag slide-out drawer.
 
 - [ ] **PROMPT 10 — Hackathon Judge Demo Mode, Telemetry HUD & E2E Verification:**
