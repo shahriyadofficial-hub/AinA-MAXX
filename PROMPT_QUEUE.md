@@ -25,7 +25,7 @@ The autonomous build engine iterates through this queue sequentially. Each promp
 - [x] **PROMPT 06 — AinA Coded: Optional Skin/Hair Vision (`muse-spark-1.3`) & Barber Card Generator (`muse-image`):**
   Build the Cerulean (`#007BA7`) scanning overlay UI, private photo upload intent, `muse-spark-1.3` vision analysis (returning skin type, face shape, hair texture, and confidence level with zero attractiveness scores), and a "Generate Barber Reference Card (`muse-image`)" button that creates a visual haircut guide + Bangla/English instructions for the user's local barber.
 
-- [ ] **PROMPT 07 — 30-Day Roadmap Engine (`muse-spark-1.3`) & Ingredient Conflict Checker (`muse-wonder`):**
+- [x] **PROMPT 07 — 30-Day Roadmap Engine (`muse-spark-1.3`) & Ingredient Conflict Checker (`muse-wonder`):**
   Build `/api/v1/roadmaps` and `/roadmap` UI with the "Mirror Scroll" elevation progress bar (Current You -> Prime You), AM/PM routine tabs, daily task checkboxes, and an interactive `muse-wonder` Ingredient & Routine Conflict Checker badge that explains why selected products work safely together in Bangladesh's climate.
 
 - [ ] **PROMPT 08 — Bilingual AI Coach (`muse-spark-1.3` + `gemini-2.5-flash`) & Red-Flag Escalation:**
