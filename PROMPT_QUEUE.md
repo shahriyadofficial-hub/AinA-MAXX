@@ -34,5 +34,5 @@ The autonomous build engine iterates through this queue sequentially. Each promp
 - [x] **PROMPT 09 — Gamification (`AinA Maxx`), Leaderboard, Community (`Vibe`) & Curated BDT Shop:**
   Build `/api/v1/tasks/[id]/completion` with server-side idempotent XP (`xp_events`), `Mirror Streak` counter with Rest Day / Freeze tokens, Effort-Only Weekly Leaderboard, privacy-safe Shareable Weekly Mirror Report card (no face photo by default), moderated `AinA Vibe` feed, and `AinA Shop` with BDT prices and Routine Bag slide-out drawer.
 
-- [ ] **PROMPT 10 — Hackathon Judge Demo Mode, Telemetry HUD & E2E Verification:**
+- [x] **PROMPT 10 — Hackathon Judge Demo Mode, Telemetry HUD & E2E Verification:**
   Add a floating "Judge Demo Bar" (toggleable in top nav) that lets hackathon judges 1-click test: (a) Instant Demo Login, (b) Live `muse-spark-1.3` Roadmap Generation, (c) `muse-wonder` Conflict Analysis, (d) `muse-image` Barber Card, (e) `sam-3.1` Wardrobe Cutout, and (f) Live API Latency/Token Telemetry Drawer showing our $150 Meta API usage in real time. Run full Vitest + Playwright suite and production build.

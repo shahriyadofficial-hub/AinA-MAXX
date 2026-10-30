@@ -4,6 +4,7 @@ import "./globals.css";
 import AinaLogo from "@/components/brand/AinaLogo";
 import BottomNav from "@/components/navigation/BottomNav";
 import { CoachDrawer } from "@/components/coach/CoachDrawer";
+import { JudgeDemoBar } from "@/components/judge/JudgeDemoBar";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -56,6 +57,7 @@ export default function RootLayout({
           <div className="max-w-xl mx-auto flex items-center justify-between">
             <AinaLogo size="sm" showSubtitle={true} />
             <div className="flex items-center space-x-2">
+              <JudgeDemoBar />
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold tracking-wider bg-aina-cerulean/15 text-aina-light-cerulean border border-aina-cerulean/30">
                 18+ ADULT
               </span>
