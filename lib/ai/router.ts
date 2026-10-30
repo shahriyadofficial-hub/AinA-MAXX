@@ -18,6 +18,7 @@ import {
   getFallbackBarberCard,
   containsForbiddenScoring,
 } from "@/lib/ai/vision";
+import { getOfflineCoachReply } from "@/lib/coach/coach";
 
 import { getCuratedFallbackRoadmap } from "@/lib/roadmap/fallback";
 
@@ -399,9 +400,7 @@ ${input.activeContext ? `Current User Context: ${input.activeContext}` : ""}`;
       };
     } catch {
       return {
-        data: isBangla
-          ? "আপনার ত্বকের বাধা রক্ষায় প্রতিদিন মৃদু ক্লিনজার এবং সানস্ক্রিন ব্যবহার করুন। প্রচুর পানি পান করুন।"
-          : "Focus on gentle cleansing, daily SPF 50+, and adequate hydration. Your skin barrier is your best foundation.",
+        data: getOfflineCoachReply(input.message, isBangla ? "bn" : "en"),
         model: "coach-offline-fallback",
         provider: "fallback",
         latencyMs: Date.now() - startTime,

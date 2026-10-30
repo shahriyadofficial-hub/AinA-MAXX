@@ -3,6 +3,7 @@ import { Space_Grotesk, Inter, Noto_Sans_Bengali } from "next/font/google";
 import "./globals.css";
 import AinaLogo from "@/components/brand/AinaLogo";
 import BottomNav from "@/components/navigation/BottomNav";
+import { CoachDrawer } from "@/components/coach/CoachDrawer";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -72,6 +73,9 @@ export default function RootLayout({
 
         {/* Persistent Mobile Bottom Navigation */}
         <BottomNav />
+
+        {/* Slide-out Bilingual AI Coach (muse-spark-1.3) */}
+        <CoachDrawer />
       </body>
     </html>
   );

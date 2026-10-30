@@ -28,7 +28,7 @@ The autonomous build engine iterates through this queue sequentially. Each promp
 - [x] **PROMPT 07 — 30-Day Roadmap Engine (`muse-spark-1.3`) & Ingredient Conflict Checker (`muse-wonder`):**
   Build `/api/v1/roadmaps` and `/roadmap` UI with the "Mirror Scroll" elevation progress bar (Current You -> Prime You), AM/PM routine tabs, daily task checkboxes, and an interactive `muse-wonder` Ingredient & Routine Conflict Checker badge that explains why selected products work safely together in Bangladesh's climate.
 
-- [ ] **PROMPT 08 — Bilingual AI Coach (`muse-spark-1.3` + `gemini-2.5-flash`) & Red-Flag Escalation:**
+- [x] **PROMPT 08 — Bilingual AI Coach (`muse-spark-1.3` + `gemini-2.5-flash`) & Red-Flag Escalation:**
   Build `/api/v1/ai/coach` and the slide-out Coach Drawer. Support one-tap Bangla/English switching, context injection from the active 30-day roadmap, automatic red-flag escalation (severe acne/hair loss -> verified dermatologist advisor card), and visible model telemetry badges (`Powered by Meta Muse Spark 1.3 · Safety verified`) for hackathon judges.
 
 - [ ] **PROMPT 09 — Gamification (`AinA Maxx`), Leaderboard, Community (`Vibe`) & Curated BDT Shop:**

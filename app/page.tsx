@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Sparkles, Compass, Flame, Shirt, ShoppingBag, ShieldCheck, ArrowRight, Zap, Target, ScanFace } from "lucide-react";
+import { Sparkles, Compass, Flame, Shirt, ShoppingBag, ShieldCheck, ArrowRight, Zap, Target, ScanFace, MessageCircle } from "lucide-react";
 import AinaLogo from "@/components/brand/AinaLogo";
 
 export default function HomePage() {
@@ -118,6 +118,16 @@ export default function HomePage() {
               <p className="text-[11px] text-neutral-400">Private skin & hair vision</p>
             </div>
           </Link>
+
+          <div className="glass-panel glass-panel-hover rounded-aina-sm p-4 flex flex-col justify-between h-32">
+            <div className="w-9 h-9 rounded-xl bg-aina-rose/15 text-aina-rose flex items-center justify-center">
+              <MessageCircle className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white font-display">AI Coach</h3>
+              <p className="text-[11px] text-neutral-400">Tap the Coach button · EN/বাংলা</p>
+            </div>
+          </div>
 
           <Link
             href="/vibe"
