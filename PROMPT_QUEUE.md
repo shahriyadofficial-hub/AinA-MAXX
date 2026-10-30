@@ -4,10 +4,10 @@ The autonomous build engine iterates through this queue sequentially. Each promp
 
 ---
 
-- [~] **PROMPT 01 — Foundation, PWA Shell & Brand System (`Ai∩A MAXX`):**
+- [x] **PROMPT 01 — Foundation, PWA Shell & Brand System (`Ai∩A MAXX`):**
   Scaffold Next.js 15 App Router (TypeScript strict), Tailwind CSS with AinA design tokens (`#0A0A0A` Jet Black, `#1A1A1D` Graphite, `#FF2D95` Neon Rose, `#007BA7` Cerulean, `#3FB6E0` Light Cerulean), fonts (`Space Grotesk`, `Inter`, `Noto Sans Bengali`), the `Ai∩A MAXX` SVG header component (white `Ai∩A` with `#FF2D95` dot on `i`, `∩` mirror arch, and spaced `M A X X` subtitle), bottom navigation (`Home`, `Roadmap`, `Wardrobe`, `Vibe`, `Shop`), and PWA manifest. Verify with `npm run build`.
 
-- [ ] **PROMPT 02 — Database Schema, Prisma, Supabase RLS & Seed Data:**
+- [x] **PROMPT 02 — Database Schema, Prisma, Supabase RLS & Seed Data:**
   Create `prisma/schema.prisma` and `supabase/migrations/0001_core.sql` from the blueprint (`profiles`, `consent_records`, `user_preferences`, `user_goals`, `roadmaps`, `roadmap_tasks`, `task_completions`, `weekly_check_ins`, `photo_assets`, `ai_interactions`, `xp_events`, `user_streaks`, `products`, `routine_templates`, `community_posts`, `content_reports`, `audit_events`). Enable RLS policies. Create `prisma/seed.ts` with 12 real Bangladeshi & global skincare/hair products (with BDT prices), 4 curated routines, and 4 Lookbook outfits.
 
 - [ ] **PROMPT 03 — 4-Model Meta API Adapter (`muse-spark-1.3`, `muse-wonder`, `muse-image`, `sam-3.1`) + Gemini Flash Fallback + Quota Backoff:**

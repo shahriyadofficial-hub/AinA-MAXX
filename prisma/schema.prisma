@@ -1,0 +1,538 @@
+// prisma/schema.prisma
+// AinA (Ai∩A MAXX) — Production Prisma Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum GoalStatus {
+  active
+  paused
+  completed
+  archived
+}
+
+enum RoadmapStatus {
+  draft
+  active
+  completed
+  archived
+  failed_generation
+}
+
+enum TaskStatus {
+  pending
+  completed
+  skipped
+  rest_day
+}
+
+enum ConsentState {
+  granted
+  withdrawn
+  denied
+  expired
+}
+
+enum AiInteractionStatus {
+  started
+  succeeded
+  rejected_schema
+  rejected_safety
+  provider_error
+  timed_out
+  fallback_used
+}
+
+model Profile {
+  id                  String             @id @default(uuid()) @db.Uuid
+  displayName         String             @map("display_name") @db.VarChar(60)
+  locale              String             @default("en") @db.VarChar(10)
+  timezone            String             @default("Asia/Dhaka") @db.VarChar(50)
+  birthDate           DateTime?          @map("birth_date") @db.Date
+  adultAccessEnabled  Boolean            @default(false) @map("adult_access_enabled")
+  avatarPath          String?            @map("avatar_path")
+  createdAt           DateTime           @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt           DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  consentRecords      ConsentRecord[]
+  preferences         UserPreferences?
+  goals               UserGoal[]
+  roadmaps            Roadmap[]
+  roadmapTasks        RoadmapTask[]
+  taskCompletions     TaskCompletion[]
+  weeklyCheckIns      WeeklyCheckIn[]
+  photoAssets         PhotoAsset[]
+  aiInteractions      AiInteraction[]
+  xpEvents            XpEvent[]
+  streak              UserStreak?
+  communityPosts      CommunityPost[]
+  communityComments   CommunityComment[]
+  postReactions       PostReaction[]
+  blockedByMe         UserBlock[]        @relation("Blocker")
+  blockedMe           UserBlock[]        @relation("Blocked")
+  reportsFiled        ContentReport[]    @relation("Reporter")
+  reportsAssigned     ContentReport[]    @relation("Assignee")
+  notifications       Notification[]
+  auditEvents         AuditEvent[]
+  wardrobeItems       WardrobeItem[]
+  outfits             Outfit[]
+
+  @@map("profiles")
+}
+
+model ConsentRecord {
+  id            String        @id @default(uuid()) @db.Uuid
+  userId        String        @map("user_id") @db.Uuid
+  purpose       String        @db.VarChar(60)
+  state         ConsentState
+  policyVersion String        @map("policy_version") @db.VarChar(30)
+  method        String        @db.VarChar(50)
+  evidence      Json          @default("{}")
+  grantedAt     DateTime?     @map("granted_at") @db.Timestamptz()
+  withdrawnAt   DateTime?     @map("withdrawn_at") @db.Timestamptz()
+  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz()
+
+  user          Profile       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  photoAssets   PhotoAsset[]
+
+  @@index([userId, purpose, createdAt(sort: Desc)])
+  @@map("consent_records")
+}
+
+model UserPreferences {
+  userId               String   @id @map("user_id") @db.Uuid
+  currencyCode         String   @default("BDT") @map("currency_code") @db.Char(3)
+  budgetTier           String   @default("budget") @map("budget_tier") @db.VarChar(20)
+  availableMinutes     Int      @default(15) @map("available_minutes") @db.SmallInt
+  goals                Json     @default("[]")
+  stylePreferences     Json     @default("{}") @map("style_preferences")
+  reminderPreferences  Json     @default("{\"enabled\":false,\"quietHours\":true}") @map("reminder_preferences")
+  updatedAt            DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  user                 Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
+}
+
+model UserGoal {
+  id         String     @id @default(uuid()) @db.Uuid
+  userId     String     @map("user_id") @db.Uuid
+  category   String     @db.VarChar(30)
+  goalKey    String     @map("goal_key") @db.VarChar(60)
+  title      String     @db.VarChar(120)
+  status     GoalStatus @default(active)
+  targetDate DateTime?  @map("target_date") @db.Date
+  createdAt  DateTime   @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt  DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  user       Profile    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@map("user_goals")
+}
+
+model Roadmap {
+  id                  String        @id @default(uuid()) @db.Uuid
+  userId              String        @map("user_id") @db.Uuid
+  title               String        @db.VarChar(120)
+  summary             String        @default("")
+  durationDays        Int           @default(30) @map("duration_days") @db.SmallInt
+  status              RoadmapStatus @default(draft)
+  generationSource    String        @default("ai") @map("generation_source") @db.VarChar(20)
+  modelId             String?       @map("model_id") @db.VarChar(60)
+  promptVersion       String?       @map("prompt_version") @db.VarChar(30)
+  outputSchemaVersion String        @default("roadmap.v1") @map("output_schema_version") @db.VarChar(30)
+  startedAt           DateTime?     @map("started_at") @db.Timestamptz()
+  completedAt         DateTime?     @map("completed_at") @db.Timestamptz()
+  createdAt           DateTime      @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt           DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  user                Profile       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks               RoadmapTask[]
+  checkIns            WeeklyCheckIn[]
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("roadmaps")
+}
+
+model RoadmapTask {
+  id                String           @id @default(uuid()) @db.Uuid
+  roadmapId         String           @map("roadmap_id") @db.Uuid
+  userId            String           @map("user_id") @db.Uuid
+  dayIndex          Int              @map("day_index") @db.SmallInt
+  category          String           @db.VarChar(30)
+  title             String           @db.VarChar(120)
+  instructions      String
+  estimatedMinutes  Int              @default(10) @map("estimated_minutes") @db.SmallInt
+  isRestDay         Boolean          @default(false) @map("is_rest_day")
+  needsProfessional Boolean          @default(false) @map("needs_professional")
+  safetyNote        String?          @map("safety_note")
+  sortOrder         Int              @default(0) @map("sort_order") @db.SmallInt
+  createdAt         DateTime         @default(now()) @map("created_at") @db.Timestamptz()
+
+  roadmap           Roadmap          @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  user              Profile          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  completions       TaskCompletion[]
+
+  @@unique([roadmapId, dayIndex, sortOrder])
+  @@index([userId, dayIndex])
+  @@map("roadmap_tasks")
+}
+
+model TaskCompletion {
+  id          String      @id @default(uuid()) @db.Uuid
+  taskId      String      @map("task_id") @db.Uuid
+  userId      String      @map("user_id") @db.Uuid
+  status      TaskStatus
+  completedAt DateTime?   @map("completed_at") @db.Timestamptz()
+  localDay    DateTime    @map("local_day") @db.Date
+  note        String?     @db.VarChar(500)
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz()
+
+  task        RoadmapTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user        Profile     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, userId, localDay])
+  @@index([userId, localDay(sort: Desc)])
+  @@map("task_completions")
+}
+
+model WeeklyCheckIn {
+  id                String    @id @default(uuid()) @db.Uuid
+  userId            String    @map("user_id") @db.Uuid
+  roadmapId         String?   @map("roadmap_id") @db.Uuid
+  weekStart         DateTime  @map("week_start") @db.Date
+  energyRating      Int?      @map("energy_rating") @db.SmallInt
+  helpfulnessRating Int?      @map("helpfulness_rating") @db.SmallInt
+  freeText          String?   @map("free_text") @db.VarChar(1000)
+  adjustments       Json      @default("{}")
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+
+  user              Profile   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roadmap           Roadmap?  @relation(fields: [roadmapId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, weekStart])
+  @@map("weekly_check_ins")
+}
+
+model PhotoAsset {
+  id              String         @id @default(uuid()) @db.Uuid
+  userId          String         @map("user_id") @db.Uuid
+  storagePath     String         @unique @map("storage_path")
+  purpose         String         @db.VarChar(50)
+  consentRecordId String?        @map("consent_record_id") @db.Uuid
+  state           String         @default("uploaded") @db.VarChar(20)
+  mimeType        String         @map("mime_type") @db.VarChar(50)
+  byteSize        BigInt         @map("byte_size")
+  capturedAt      DateTime?      @map("captured_at") @db.Timestamptz()
+  expiresAt       DateTime?      @map("expires_at") @db.Timestamptz()
+  deletedAt       DateTime?      @map("deleted_at") @db.Timestamptz()
+  createdAt       DateTime       @default(now()) @map("created_at") @db.Timestamptz()
+
+  user            Profile        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  consent         ConsentRecord? @relation(fields: [consentRecordId], references: [id], onDelete: Restrict)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("photo_assets")
+}
+
+model AiInteraction {
+  id            String              @id @default(uuid()) @db.Uuid
+  userId        String?             @map("user_id") @db.Uuid
+  feature       String              @db.VarChar(50)
+  provider      String              @default("meta_model_api") @db.VarChar(50)
+  modelId       String              @map("model_id") @db.VarChar(60)
+  promptVersion String              @map("prompt_version") @db.VarChar(30)
+  schemaVersion String?             @map("schema_version") @db.VarChar(30)
+  status        AiInteractionStatus @default(started)
+  latencyMs     Int?                @map("latency_ms")
+  inputTokens   Int?                @map("input_tokens")
+  outputTokens  Int?                @map("output_tokens")
+  estimatedCost Decimal?            @map("estimated_cost") @db.Decimal(12, 6)
+  safetyFlags   String[]            @default([]) @map("safety_flags")
+  requestId     String?             @map("request_id")
+  createdAt     DateTime            @default(now()) @map("created_at") @db.Timestamptz()
+
+  user          Profile?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("ai_interactions")
+}
+
+model XpEvent {
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  eventKey       String   @map("event_key") @db.VarChar(60)
+  sourceType     String   @map("source_type") @db.VarChar(50)
+  sourceId       String?  @map("source_id") @db.Uuid
+  xpDelta        Int      @map("xp_delta")
+  localDay       DateTime @map("local_day") @db.Date
+  idempotencyKey String   @unique @map("idempotency_key")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  user           Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, localDay(sort: Desc)])
+  @@map("xp_events")
+}
+
+model UserStreak {
+  userId                String    @id @map("user_id") @db.Uuid
+  currentStreak         Int       @default(0) @map("current_streak")
+  longestStreak         Int       @default(0) @map("longest_streak")
+  lastQualifiedLocalDay DateTime? @map("last_qualified_local_day") @db.Date
+  freezeTokens          Int       @default(0) @map("freeze_tokens") @db.SmallInt
+  updatedAt             DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  user                  Profile   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_streaks")
+}
+
+model Product {
+  id             String           @id @default(uuid()) @db.Uuid
+  slug           String           @unique @db.VarChar(100)
+  name           String           @db.VarChar(150)
+  brand          String?          @db.VarChar(100)
+  category       String           @db.VarChar(30)
+  description    String           @default("")
+  ingredients    Json?
+  currencyCode   String           @default("BDT") @map("currency_code") @db.Char(3)
+  currentPrice   Decimal?         @map("current_price") @db.Decimal(12, 2)
+  stockStatus    String           @default("unknown") @map("stock_status") @db.VarChar(20)
+  sellerName     String?          @map("seller_name") @db.VarChar(100)
+  productUrl     String?          @map("product_url")
+  imagePath      String?          @map("image_path")
+  isAffiliate    Boolean          @default(false) @map("is_affiliate")
+  isSponsored    Boolean          @default(false) @map("is_sponsored")
+  isPublished    Boolean          @default(false) @map("is_published")
+  priceCheckedAt DateTime?        @map("price_checked_at") @db.Timestamptz()
+  reviewedAt     DateTime?        @map("reviewed_at") @db.Timestamptz()
+  createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt      DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  routineProducts RoutineProduct[]
+
+  @@index([category, isPublished])
+  @@map("products")
+}
+
+model RoutineTemplate {
+  id          String           @id @default(uuid()) @db.Uuid
+  slug        String           @unique @db.VarChar(100)
+  title       String           @db.VarChar(120)
+  category    String           @db.VarChar(30)
+  locale      String           @default("en") @db.VarChar(10)
+  budgetTier  String           @default("budget") @map("budget_tier") @db.VarChar(20)
+  content     String
+  safetyNotes String?          @map("safety_notes")
+  reviewedBy  String?          @map("reviewed_by") @db.VarChar(60)
+  reviewedAt  DateTime?        @map("reviewed_at") @db.Timestamptz()
+  version     Int              @default(1)
+  isPublished Boolean          @default(false) @map("is_published")
+  createdAt   DateTime         @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  steps       RoutineStep[]
+  products    RoutineProduct[]
+
+  @@map("routine_templates")
+}
+
+model RoutineStep {
+  id               String          @id @default(uuid()) @db.Uuid
+  routineId        String          @map("routine_id") @db.Uuid
+  stepOrder        Int             @map("step_order") @db.SmallInt
+  title            String          @db.VarChar(120)
+  instructions     String
+  timeOfDay        String?         @map("time_of_day") @db.VarChar(20)
+  estimatedMinutes Int             @default(5) @map("estimated_minutes") @db.SmallInt
+  createdAt        DateTime        @default(now()) @map("created_at") @db.Timestamptz()
+
+  routine          RoutineTemplate @relation(fields: [routineId], references: [id], onDelete: Cascade)
+
+  @@unique([routineId, stepOrder])
+  @@map("routine_steps")
+}
+
+model RoutineProduct {
+  routineId String          @map("routine_id") @db.Uuid
+  productId String          @map("product_id") @db.Uuid
+  purpose   String          @default("recommended") @db.VarChar(50)
+  sortOrder Int             @default(0) @map("sort_order") @db.SmallInt
+
+  routine   RoutineTemplate @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  product   Product         @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@id([routineId, productId])
+  @@map("routine_products")
+}
+
+model CommunityPost {
+  id               String             @id @default(uuid()) @db.Uuid
+  userId           String             @map("user_id") @db.Uuid
+  body             String
+  visibility       String             @default("public") @db.VarChar(20)
+  status           String             @default("pending") @db.VarChar(20)
+  moderationReason String?            @map("moderation_reason")
+  createdAt        DateTime           @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt        DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  user             Profile            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments         CommunityComment[]
+  reactions        PostReaction[]
+
+  @@index([status, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("community_posts")
+}
+
+model CommunityComment {
+  id        String        @id @default(uuid()) @db.Uuid
+  postId    String        @map("post_id") @db.Uuid
+  userId    String        @map("user_id") @db.Uuid
+  body      String
+  status    String        @default("published") @db.VarChar(20)
+  createdAt DateTime      @default(now()) @map("created_at") @db.Timestamptz()
+
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      Profile       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([postId, createdAt])
+  @@map("community_comments")
+}
+
+model PostReaction {
+  postId    String        @map("post_id") @db.Uuid
+  userId    String        @map("user_id") @db.Uuid
+  reaction  String        @default("like") @db.VarChar(20)
+  createdAt DateTime      @default(now()) @map("created_at") @db.Timestamptz()
+
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      Profile       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([postId, userId, reaction])
+  @@map("post_reactions")
+}
+
+model UserBlock {
+  blockerId String   @map("blocker_id") @db.Uuid
+  blockedId String   @map("blocked_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  blocker   Profile  @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked   Profile  @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@id([blockerId, blockedId])
+  @@map("user_blocks")
+}
+
+model ContentReport {
+  id          String    @id @default(uuid()) @db.Uuid
+  reporterId  String    @map("reporter_id") @db.Uuid
+  targetType  String    @map("target_type") @db.VarChar(30)
+  targetId    String    @map("target_id") @db.Uuid
+  reason      String    @db.VarChar(100)
+  details     String?   @db.VarChar(1500)
+  status      String    @default("open") @db.VarChar(20)
+  assignedTo  String?   @map("assigned_to") @db.Uuid
+  resolution  String?
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  resolvedAt  DateTime? @map("resolved_at") @db.Timestamptz()
+
+  reporter    Profile   @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  assignee    Profile?  @relation("Assignee", fields: [assignedTo], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@map("content_reports")
+}
+
+model Notification {
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @map("user_id") @db.Uuid
+  notificationType String    @map("notification_type") @db.VarChar(50)
+  title            String    @db.VarChar(150)
+  body             String
+  payload          Json      @default("{}")
+  readAt           DateTime? @map("read_at") @db.Timestamptz()
+  scheduledAt      DateTime? @map("scheduled_at") @db.Timestamptz()
+  sentAt           DateTime? @map("sent_at") @db.Timestamptz()
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+
+  user             Profile   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("notifications")
+}
+
+model AuditEvent {
+  id           String   @id @default(uuid()) @db.Uuid
+  actorUserId  String?  @map("actor_user_id") @db.Uuid
+  action       String   @db.VarChar(100)
+  entityType   String   @map("entity_type") @db.VarChar(50)
+  entityId     String?  @map("entity_id") @db.Uuid
+  requestId    String?  @map("request_id")
+  safeMetadata Json     @default("{}") @map("safe_metadata")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  actor        Profile? @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt(sort: Desc)])
+  @@map("audit_events")
+}
+
+model WardrobeItem {
+  id          String        @id @default(uuid()) @db.Uuid
+  userId      String        @map("user_id") @db.Uuid
+  category    String        @db.VarChar(30)
+  color       String?       @db.VarChar(30)
+  brand       String?       @db.VarChar(60)
+  imagePath   String        @map("image_path")
+  cutoutPath  String?       @map("cutout_path")
+  season      String?       @default("all") @db.VarChar(30)
+  usageCount  Int           @default(0) @map("usage_count")
+  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  user        Profile       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  outfitItems OutfitItem[]
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("wardrobe_items")
+}
+
+model Outfit {
+  id          String        @id @default(uuid()) @db.Uuid
+  userId      String        @map("user_id") @db.Uuid
+  title       String        @db.VarChar(120)
+  occasion    String        @default("everyday") @db.VarChar(50)
+  season      String?       @default("all") @db.VarChar(30)
+  notes       String?
+  isCurated   Boolean       @default(false) @map("is_curated")
+  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  user        Profile       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items       OutfitItem[]
+
+  @@map("outfits")
+}
+
+model OutfitItem {
+  outfitId       String       @map("outfit_id") @db.Uuid
+  wardrobeItemId String       @map("wardrobe_item_id") @db.Uuid
+  layerOrder     Int          @default(0) @map("layer_order") @db.SmallInt
+
+  outfit         Outfit       @relation(fields: [outfitId], references: [id], onDelete: Cascade)
+  wardrobeItem   WardrobeItem @relation(fields: [wardrobeItemId], references: [id], onDelete: Cascade)
+
+  @@id([outfitId, wardrobeItemId])
+  @@map("outfit_items")
+}
