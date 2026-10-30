@@ -19,7 +19,7 @@ The autonomous build engine iterates through this queue sequentially. Each promp
 - [x] **PROMPT 04 — Adult 18+ Auth, PDPA 2026 Consent Registry & Bilingual Onboarding Quiz:**
   Implement `/api/v1/consents` and `/api/v1/onboarding`. Build the DOB age-gate (under-13 blocked; 13-17 routed to public read-only safe mode; 18+ full access), revocable purpose-specific consent toggles (`photo_processing`, `health_related_personalization`), and the 5-step Bangla/English onboarding quiz (Goals, Skin/Hair type, BDT Budget Tier, Daily Minutes, Language).
 
-- [ ] **PROMPT 05 — Interactive CSS 3D Lookbook Hero & AinA Drip (`sam-3.1` Wardrobe Cutout):**
+- [x] **PROMPT 05 — Interactive CSS 3D Lookbook Hero & AinA Drip (`sam-3.1` Wardrobe Cutout):**
   Build `components/lookbook/Lookbook3D.tsx` using pure HTML/CSS `preserve-3d` and vanilla JS pointer/gyro tilt (`<15KB`, 60fps on budget Android) with floating pill tags (`• Relaxed Fit`, `• Everyday`), giant ghost typography (`PRIME YOU` / `WEAR IT LOUD`), floor reflection, and `01 / 04` counter. Add an interactive "Upload Item (`SAM 3.1` Auto-Cutout)" demo button that segments a clothing item and places it into a 3D parallax card.
 
 - [ ] **PROMPT 06 — AinA Coded: Optional Skin/Hair Vision (`muse-spark-1.3`) & Barber Card Generator (`muse-image`):**
