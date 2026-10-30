@@ -10,7 +10,7 @@ The autonomous build engine iterates through this queue sequentially. Each promp
 - [x] **PROMPT 02 — Database Schema, Prisma, Supabase RLS & Seed Data:**
   Create `prisma/schema.prisma` and `supabase/migrations/0001_core.sql` from the blueprint (`profiles`, `consent_records`, `user_preferences`, `user_goals`, `roadmaps`, `roadmap_tasks`, `task_completions`, `weekly_check_ins`, `photo_assets`, `ai_interactions`, `xp_events`, `user_streaks`, `products`, `routine_templates`, `community_posts`, `content_reports`, `audit_events`). Enable RLS policies. Create `prisma/seed.ts` with 12 real Bangladeshi & global skincare/hair products (with BDT prices), 4 curated routines, and 4 Lookbook outfits.
 
-- [ ] **PROMPT 03 — 4-Model Meta API Adapter (`muse-spark-1.3`, `muse-wonder`, `muse-image`, `sam-3.1`) + Gemini Flash Fallback + Quota Backoff:**
+- [x] **PROMPT 03 — 4-Model Meta API Adapter (`muse-spark-1.3`, `muse-wonder`, `muse-image`, `sam-3.1`) + Gemini Flash Fallback + Quota Backoff:**
   Build `lib/ai/providers/meta.ts`, `lib/ai/providers/gemini.ts`, and `lib/ai/router.ts`. Include:
   1. Disk cache in `.cache/ai/` for dev/test credit protection.
   2. Automatic exponential backoff & quota sleep handler (`onQuotaExhausted`: parses `Retry-After` / `x-ratelimit-reset`, logs countdown, waits and retries automatically).
