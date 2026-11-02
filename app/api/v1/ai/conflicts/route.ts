@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 // app/api/v1/ai/conflicts/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";

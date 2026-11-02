@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 // app/api/v1/wardrobe/cutout/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
