@@ -2,19 +2,26 @@
 
 // components/fashion/ComboProductCard.tsx
 // AinA Drip — one shoppable product row inside the Combo Sidebar.
-// Owns its size selection; reports toggles up to ShoppableLookbookSection.
+// Size selection is controlled by the parent so the Maisonblock Fitting
+// Engine can bind its recommendation straight into this variant selector.
 
-import React, { useState } from "react";
+import React from "react";
 import Image from "next/image";
-import { Check, ShoppingBag } from "lucide-react";
-import { formatLookBdt, type LookProduct } from "@/lib/fashion/lookbook";
+import { BadgeCheck, Check, Ruler, ShoppingBag } from "lucide-react";
+import { formatLookBdt, hasVerifiedSizing, type LookProduct } from "@/lib/fashion/lookbook";
+import { MaisonblockLockedPill } from "./sizing/MaisonblockLockedPill";
 
 interface ComboProductCardProps {
   product: LookProduct;
   highlighted: boolean;
   selected: boolean;
+  /** Currently chosen size (controlled — Maisonblock can set it). */
+  size: string;
+  onSizeChange: (productId: string, size: string) => void;
   onToggle: (product: LookProduct) => void;
   onHighlight: (productId: string | null) => void;
+  /** Opens the Maisonblock Fitting Engine (verified merchants only). */
+  onFindMyFit: (product: LookProduct) => void;
 }
 
 const CATEGORY_LABEL: Record<LookProduct["category"], string> = {
@@ -24,8 +31,8 @@ const CATEGORY_LABEL: Record<LookProduct["category"], string> = {
   accessory: "Accessory",
 };
 
-export function ComboProductCard({ product, highlighted, selected, onToggle, onHighlight }: ComboProductCardProps) {
-  const [size, setSize] = useState<string>(product.availableSizes[0] ?? "One Size");
+export function ComboProductCard({ product, highlighted, selected, size, onSizeChange, onToggle, onHighlight, onFindMyFit }: ComboProductCardProps) {
+  const verified = hasVerifiedSizing(product);
 
   return (
     <article
@@ -58,14 +65,14 @@ export function ComboProductCard({ product, highlighted, selected, onToggle, onH
             <p className="shrink-0 font-display text-sm font-extrabold text-white">{formatLookBdt(product.priceBDT)}</p>
           </div>
 
-          {/* Size selector — real buttons, 44px-friendly, labelled for AT */}
+          {/* Size selector — real buttons, labelled for AT, Maisonblock-bindable */}
           <div className="mt-2 flex flex-wrap items-center gap-1.5" role="group" aria-label={`Size for ${product.name}`}>
             {product.availableSizes.map((s) => (
               <button
                 key={s}
                 type="button"
                 aria-pressed={size === s}
-                onClick={() => setSize(s)}
+                onClick={() => onSizeChange(product.id, s)}
                 className={`min-h-[32px] min-w-[36px] rounded-lg px-2 text-[11px] font-bold transition active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-aina-rose ${
                   size === s ? "bg-white text-black" : "border border-white/15 bg-white/5 text-neutral-300 hover:text-white"
                 }`}
@@ -92,6 +99,22 @@ export function ComboProductCard({ product, highlighted, selected, onToggle, onH
               {selected ? `Added · ${size}` : `Add · ${size}`}
             </button>
           </div>
+
+          {/* Maisonblock Fitting Engine — verified merchants only */}
+          {verified ? (
+            <button
+              type="button"
+              data-testid={`find-my-fit-${product.id}`}
+              onClick={() => onFindMyFit(product)}
+              className="mt-2.5 inline-flex min-h-[40px] w-full items-center justify-center gap-2 rounded-full border border-aina-rose/50 bg-aina-rose/10 px-3 text-[11px] font-extrabold text-aina-rose transition hover:bg-aina-rose/20 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-aina-rose"
+            >
+              <Ruler className="h-3.5 w-3.5" aria-hidden="true" />
+              Find My Fit · Maisonblock Engine
+              <BadgeCheck className="h-3.5 w-3.5 text-emerald-400" aria-hidden="true" />
+            </button>
+          ) : (
+            <MaisonblockLockedPill />
+          )}
         </div>
       </div>
     </article>

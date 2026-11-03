@@ -21,12 +21,15 @@ import {
 } from "@/lib/fashion/lookbook";
 import { HotspotMarker } from "./HotspotMarker";
 import { ComboProductCard } from "./ComboProductCard";
+import { MaisonblockFittingModal } from "./sizing/MaisonblockFittingModal";
 
 export function ShoppableLookbookSection() {
   const reduceMotion = useReducedMotion();
   const [lookIndex, setLookIndex] = useState(0);
   const [activeProductId, setActiveProductId] = useState<string | null>(null);
   const [selectedByLook, setSelectedByLook] = useState<Record<string, string[]>>({});
+  const [sizeByProduct, setSizeByProduct] = useState<Record<string, string>>({});
+  const [fitProduct, setFitProduct] = useState<LookProduct | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -61,6 +64,21 @@ export function ShoppableLookbookSection() {
   const handleCardHighlight = useCallback((productId: string | null) => {
     setActiveProductId(productId);
   }, []);
+
+  const handleSizeChange = useCallback((productId: string, size: string) => {
+    setSizeByProduct((prev) => ({ ...prev, [productId]: size }));
+  }, []);
+
+  /** Maisonblock "Select Size [X]" — binds into the card variant selector. */
+  const handleFitSelect = useCallback(
+    (productId: string, size: string) => {
+      setSizeByProduct((prev) => ({ ...prev, [productId]: size }));
+      setActiveProductId(productId);
+      const product = look.products.find((p) => p.id === productId);
+      showToast(`Maisonblock fit applied: ${product?.name ?? "Garment"} · Size ${size}. Nothing about your body left this device.`);
+    },
+    [look, showToast]
+  );
 
   const handleToggle = useCallback(
     (product: LookProduct) => {
@@ -224,8 +242,11 @@ export function ShoppableLookbookSection() {
                   product={product}
                   highlighted={activeProductId === product.id}
                   selected={selectedIds.has(product.id)}
+                  size={sizeByProduct[product.id] ?? product.availableSizes[0] ?? "One Size"}
+                  onSizeChange={handleSizeChange}
                   onToggle={handleToggle}
                   onHighlight={handleCardHighlight}
+                  onFindMyFit={setFitProduct}
                 />
               ))}
             </div>
@@ -274,6 +295,14 @@ export function ShoppableLookbookSection() {
           </div>
         </div>
       </div>
+
+      {/* Maisonblock Fitting Engine (Verified Precision Merchants only) */}
+      <MaisonblockFittingModal
+        open={fitProduct !== null}
+        product={fitProduct}
+        onClose={() => setFitProduct(null)}
+        onSelectSize={handleFitSelect}
+      />
     </section>
   );
 }

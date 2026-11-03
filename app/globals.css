@@ -114,3 +114,103 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/* Maisonblock Fitting Engine — GPU-only motion (transform/opacity) */
+@keyframes maisonblock-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes maisonblock-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes maisonblock-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.maisonblock-sheet {
+  animation: maisonblock-sheet-in 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.maisonblock-fade {
+  animation: maisonblock-fade-in 0.2s ease-out;
+}
+
+.maisonblock-pop {
+  animation: maisonblock-pop-in 0.22s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .maisonblock-sheet,
+  .maisonblock-fade,
+  .maisonblock-pop {
+    animation: none;
+  }
+}
+
+/* Touch-friendly range sliders (44px hit area via padding trick) */
+.maisonblock-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 44px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.maisonblock-range::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #007ba7, #ff2d95);
+}
+
+.maisonblock-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -9px;
+  height: 24px;
+  width: 24px;
+  border-radius: 9999px;
+  background: #ffffff;
+  border: 3px solid #ff2d95;
+  box-shadow: 0 0 14px rgba(255, 45, 149, 0.55);
+}
+
+.maisonblock-range::-moz-range-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #007ba7, #ff2d95);
+}
+
+.maisonblock-range::-moz-range-thumb {
+  height: 22px;
+  width: 22px;
+  border-radius: 9999px;
+  background: #ffffff;
+  border: 3px solid #ff2d95;
+  box-shadow: 0 0 14px rgba(255, 45, 149, 0.55);
+}
+
+.maisonblock-range:focus-visible {
+  outline: 2px solid #ff2d95;
+  outline-offset: 2px;
+  border-radius: 9999px;
+}

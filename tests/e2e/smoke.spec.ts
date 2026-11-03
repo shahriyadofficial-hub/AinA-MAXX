@@ -86,4 +86,32 @@ test.describe("AinA MAXX — judge smoke suite", () => {
     await expect(page.getByText("Four ways to wear it.")).toBeVisible();
     await expect(page.getByText("Shoppable Lookbook — tap a hotspot, shop the combo")).toBeVisible();
   });
+
+  test("maisonblock: verified merchant opens fitting engine, locked pill for others", async ({ page }) => {
+    await page.goto("/drip");
+    // Verified Precision Merchant SKU → active trigger.
+    await expect(page.getByTestId("find-my-fit-p-tee-graphic")).toBeVisible();
+    // Unverified SKU → elegant locked teaser.
+    await expect(page.getByText(/Coming Soon for Verified Precision Merchants/).first()).toBeVisible();
+
+    await page.getByTestId("find-my-fit-p-tee-graphic").click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await expect(page.getByText("Find My Fit · Oversized Graphic Tee")).toBeVisible();
+    await expect(page.getByText(/Verified Precision Merchant/)).toBeVisible();
+    await expect(page.getByText(/Private by design/)).toBeVisible();
+
+    // Step flow: measurements → body shape → fit preference.
+    await page.getByRole("button", { name: "Next" }).click();
+    await expect(page.getByText("Body shape & composition")).toBeVisible();
+    await page.getByRole("button", { name: "Athletic", exact: true }).click();
+    await page.getByRole("button", { name: "Next" }).click();
+    await expect(page.getByText("How do you like it to fit?")).toBeVisible();
+
+    // Apply the live recommendation — it must bind into the card size selector.
+    const applyBtn = page.getByRole("button", { name: /Select Size/ }).first();
+    await expect(applyBtn).toBeVisible();
+    await applyBtn.click();
+    await expect(page.getByRole("dialog")).toBeHidden();
+    await expect(page.getByText(/Maisonblock fit applied/)).toBeVisible();
+  });
 });

@@ -25,6 +25,24 @@ export interface LookProduct {
   image: string;
   availableSizes: string[];
   inStock: boolean;
+  /**
+   * Maisonblock gate: true only when the merchant supplied verified,
+   * granular per-size garment measurements. Never infer this client-side —
+   * it must come from seller metadata.
+   */
+  hasAccurateSizing?: boolean;
+  /** Alias used by some seller feeds; either flag unlocks the engine. */
+  verifiedSizing?: boolean;
+  /** Verified per-size measurements (cm) powering the Maisonblock engine. */
+  garmentMeasurements?: {
+    sizes: string[];
+    measurements: Record<string, { chest_cm: number; length_cm: number; sleeve_cm?: number; waist_cm?: number }>;
+  };
+}
+
+/** Single source of truth for the Maisonblock merchant-verification gate. */
+export function hasVerifiedSizing(product: Pick<LookProduct, "hasAccurateSizing" | "verifiedSizing" | "garmentMeasurements">): boolean {
+  return Boolean((product.hasAccurateSizing || product.verifiedSizing) && product.garmentMeasurements);
 }
 
 export interface LookbookItem {
@@ -143,6 +161,17 @@ export const LOOKBOOK_ITEMS: LookbookItem[] = [
         image: productArt({ bg: "#F4F1EA", glyph: GLYPH.top, accent: "#FF2D95", label: "Oversized Graphic Tee" }),
         availableSizes: ["S", "M", "L", "XL"],
         inStock: true,
+        // AinA Studio is a Verified Precision Merchant for this SKU.
+        hasAccurateSizing: true,
+        garmentMeasurements: {
+          sizes: ["S", "M", "L", "XL"],
+          measurements: {
+            S: { chest_cm: 96, length_cm: 66, sleeve_cm: 22 },
+            M: { chest_cm: 104, length_cm: 69, sleeve_cm: 23 },
+            L: { chest_cm: 112, length_cm: 72, sleeve_cm: 24 },
+            XL: { chest_cm: 120, length_cm: 75, sleeve_cm: 25 },
+          },
+        },
       },
       {
         id: "p-trouser-wide",
@@ -209,6 +238,15 @@ export const LOOKBOOK_ITEMS: LookbookItem[] = [
         image: productArt({ bg: "#27272A", glyph: GLYPH.top, accent: "#3FB6E0", label: "DWR Utility Bomber" }),
         availableSizes: ["M", "L", "XL"],
         inStock: true,
+        hasAccurateSizing: true,
+        garmentMeasurements: {
+          sizes: ["M", "L", "XL"],
+          measurements: {
+            M: { chest_cm: 108, length_cm: 68, sleeve_cm: 62 },
+            L: { chest_cm: 116, length_cm: 71, sleeve_cm: 64 },
+            XL: { chest_cm: 124, length_cm: 74, sleeve_cm: 66 },
+          },
+        },
       },
       {
         id: "p-jogger-ripstop",
@@ -275,6 +313,16 @@ export const LOOKBOOK_ITEMS: LookbookItem[] = [
         image: productArt({ bg: "#E8DFC8", glyph: GLYPH.top, accent: "#FF2D95", label: "Hand-Embroidered Panjabi" }),
         availableSizes: ["38", "40", "42", "44"],
         inStock: true,
+        verifiedSizing: true,
+        garmentMeasurements: {
+          sizes: ["38", "40", "42", "44"],
+          measurements: {
+            "38": { chest_cm: 97, length_cm: 102, sleeve_cm: 58 },
+            "40": { chest_cm: 102, length_cm: 105, sleeve_cm: 60 },
+            "42": { chest_cm: 107, length_cm: 108, sleeve_cm: 62 },
+            "44": { chest_cm: 112, length_cm: 111, sleeve_cm: 64 },
+          },
+        },
       },
       {
         id: "p-slack-ivory",
