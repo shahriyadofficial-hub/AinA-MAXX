@@ -166,4 +166,51 @@ test.describe("AinA MAXX — judge smoke suite", () => {
     await expect(rail.getByText("Out of Stock").first()).toBeVisible();
     await expect(rail.getByTestId("rail-add-to-bag")).toBeDisabled();
   });
+
+  test("orzr: clothing rack browses by keyboard with archive announcement", async ({ page }) => {
+    await page.goto("/orzr");
+    await expect(page.getByRole("heading", { name: /The rack is/ })).toBeVisible();
+    await expect(page.getByRole("tab", { name: /CLOTHING/ })).toHaveAttribute("aria-selected", "true");
+
+    const rack = page.getByRole("region", { name: /Clothing rack/ });
+    await rack.focus();
+    await expect(page.getByRole("status")).toHaveText("Viewing item 1 of 4: OVERSIZED SHIRT");
+
+    await page.keyboard.press("ArrowRight");
+    await expect(page.getByRole("status")).toHaveText("Viewing item 2 of 4: HEAVYWEIGHT HOODIE");
+    await expect(page.getByRole("heading", { name: "HEAVYWEIGHT HOODIE" })).toBeVisible();
+
+    await page.keyboard.press("ArrowLeft");
+    await expect(page.getByRole("status")).toHaveText("Viewing item 1 of 4: OVERSIZED SHIRT");
+  });
+
+  test("orzr: detail overlay opens with construction breakdown and ESC closes", async ({ page }) => {
+    await page.goto("/orzr");
+    await page.getByRole("button", { name: "View Archive Entry", exact: true }).click();
+
+    const dialog = page.getByRole("dialog", { name: /Archive entry: OVERSIZED SHIRT/ });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText("Type: CLOTHING")).toBeVisible();
+    await expect(dialog.getByText("100% Japanese Cotton")).toBeVisible();
+    await expect(dialog.getByText(/Non-transactional/)).toBeVisible();
+
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+  });
+
+  test("orzr: accessory case switches layout and opens ring entry", async ({ page }) => {
+    await page.goto("/orzr");
+    await page.getByRole("tab", { name: /ACCESSORY/ }).click();
+    await expect(page.getByText("Display Case · Velvet / Graphite")).toBeVisible();
+    await expect(page.getByRole("status")).toHaveText("Viewing item 1 of 3: FORM RING");
+
+    await page.getByRole("button", { name: /View archive entry: FORM RING/ }).click();
+    const dialog = page.getByRole("dialog", { name: /Archive entry: FORM RING/ });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText("Type: ACCESSORY")).toBeVisible();
+    await expect(dialog.getByText("925 Sterling Silver", { exact: true })).toBeVisible();
+
+    await dialog.getByRole("button", { name: /Close archive entry/ }).click();
+    await expect(dialog).toBeHidden();
+  });
 });
