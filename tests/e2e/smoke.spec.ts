@@ -62,4 +62,28 @@ test.describe("AinA MAXX — judge smoke suite", () => {
     await expect(page.getByText(/Private photo processing consent/)).toBeVisible();
     await expect(page.getByText(/Turn on the consent above first/)).toBeVisible();
   });
+
+  test("drip hub renders all four fashion experiences", async ({ page }) => {
+    await page.goto("/drip");
+    await expect(page.getByText("Four ways to wear it.")).toBeVisible();
+    await expect(page.getByRole("link", { name: /Try the Look/ })).toBeVisible();
+    await expect(page.getByText("Shoppable Lookbook — tap a hotspot, shop the combo")).toBeVisible();
+    await expect(page.getByText("What goes with what — for Dhaka weather")).toBeVisible();
+    await expect(page.getByText("Your wardrobe, cut out by SAM 3.1")).toBeVisible();
+  });
+
+  test("shoppable lookbook: hotspot activates combo card and bundle total", async ({ page }) => {
+    await page.goto("/drip");
+    await page.getByTestId("hotspot-hs-tee").click();
+    await expect(page.getByTestId("combo-card-p-tee-graphic")).toBeVisible();
+    await expect(page.getByText(/Buy the Full Look/)).toBeVisible();
+    await page.getByRole("tab", { name: /05 Monsoon Minimalist/ }).click();
+    await expect(page.getByTestId("hotspot-hs-bomber")).toBeVisible();
+  });
+
+  test("legacy /wardrobe route renders the same fashion hub", async ({ page }) => {
+    await page.goto("/wardrobe");
+    await expect(page.getByText("Four ways to wear it.")).toBeVisible();
+    await expect(page.getByText("Shoppable Lookbook — tap a hotspot, shop the combo")).toBeVisible();
+  });
 });
