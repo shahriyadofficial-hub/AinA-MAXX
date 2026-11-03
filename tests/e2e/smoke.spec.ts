@@ -63,10 +63,11 @@ test.describe("AinA MAXX — judge smoke suite", () => {
     await expect(page.getByText(/Turn on the consent above first/)).toBeVisible();
   });
 
-  test("drip hub renders all four fashion experiences", async ({ page }) => {
+  test("drip hub renders all five fashion experiences", async ({ page }) => {
     await page.goto("/drip");
-    await expect(page.getByText("Four ways to wear it.")).toBeVisible();
+    await expect(page.getByText("Five ways to wear it.")).toBeVisible();
     await expect(page.getByRole("link", { name: /Try the Look/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: /The Rail/ })).toBeVisible();
     await expect(page.getByText("Shoppable Lookbook — tap a hotspot, shop the combo")).toBeVisible();
     await expect(page.getByText("What goes with what — for Dhaka weather")).toBeVisible();
     await expect(page.getByText("Your wardrobe, cut out by SAM 3.1")).toBeVisible();
@@ -83,7 +84,7 @@ test.describe("AinA MAXX — judge smoke suite", () => {
 
   test("legacy /wardrobe route renders the same fashion hub", async ({ page }) => {
     await page.goto("/wardrobe");
-    await expect(page.getByText("Four ways to wear it.")).toBeVisible();
+    await expect(page.getByText("Five ways to wear it.")).toBeVisible();
     await expect(page.getByText("Shoppable Lookbook — tap a hotspot, shop the combo")).toBeVisible();
   });
 
@@ -114,5 +115,55 @@ test.describe("AinA MAXX — judge smoke suite", () => {
     await applyBtn.click();
     await expect(dialog).toBeHidden();
     await expect(page.getByText(/Maisonblock fit applied/)).toBeVisible();
+  });
+
+  test("rail: keyboard browsing updates the screen-reader announcement", async ({ page }) => {
+    await page.goto("/drip");
+    const rail = page.getByTestId("rail-carousel");
+    await rail.scrollIntoViewIfNeeded();
+    await expect(rail.getByText("Slide the rail.")).toBeVisible();
+
+    const region = rail.getByRole("region", { name: /Rail product browser/ });
+    await region.focus();
+    await expect(rail.getByRole("status")).toHaveText(/Product 1 of \d+: Heavyweight Oversized Hoodie, 3850 BDT/);
+
+    await page.keyboard.press("ArrowRight");
+    await expect(rail.getByRole("status")).toHaveText(/Product 2 of \d+:/);
+    await expect(rail.getByRole("heading", { name: /Oversized Graphic Tee/ })).toBeVisible();
+
+    await page.keyboard.press("ArrowLeft");
+    await expect(rail.getByRole("status")).toHaveText(/Product 1 of \d+:/);
+  });
+
+  test("rail: quick view adds to the routine bag with toast and drawer total", async ({ page }) => {
+    await page.goto("/drip");
+    const rail = page.getByTestId("rail-carousel");
+    await rail.scrollIntoViewIfNeeded();
+
+    await rail.getByRole("button", { name: /Quick view/ }).click();
+    const dialog = page.getByRole("dialog", { name: /Quick view/ });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText("Heavyweight Oversized Hoodie")).toBeVisible();
+
+    await dialog.getByRole("button", { name: /Add to Bag/ }).click();
+    await expect(page.getByText(/Added Heavyweight Oversized Hoodie/)).toBeVisible();
+    await expect(page.getByTestId("routine-bag-count")).toHaveText("1");
+
+    // Quick view hands off to the bag drawer with a BDT total.
+    const bag = page.getByRole("dialog", { name: "Routine Bag" });
+    await expect(bag).toBeVisible();
+    await expect(bag.getByText("Total (BDT)")).toBeVisible();
+    await expect(bag.locator("span").filter({ hasText: /^৳3,850$/ })).toBeVisible();
+  });
+
+  test("rail: out-of-stock product shows badge and disables purchase", async ({ page }) => {
+    await page.goto("/drip");
+    const rail = page.getByTestId("rail-carousel");
+    await rail.scrollIntoViewIfNeeded();
+
+    await rail.getByRole("tab", { name: /Washed Denim Trucker Jacket/ }).click();
+    await expect(rail.getByRole("status")).toHaveText(/Washed Denim Trucker Jacket, 3450 BDT/);
+    await expect(rail.getByText("Out of Stock").first()).toBeVisible();
+    await expect(rail.getByTestId("rail-add-to-bag")).toBeDisabled();
   });
 });
