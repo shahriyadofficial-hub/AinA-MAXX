@@ -95,23 +95,24 @@ test.describe("AinA MAXX — judge smoke suite", () => {
     await expect(page.getByText(/Coming Soon for Verified Precision Merchants/).first()).toBeVisible();
 
     await page.getByTestId("find-my-fit-p-tee-graphic").click();
-    await expect(page.getByRole("dialog")).toBeVisible();
-    await expect(page.getByText("Find My Fit · Oversized Graphic Tee")).toBeVisible();
-    await expect(page.getByText(/Verified Precision Merchant/)).toBeVisible();
-    await expect(page.getByText(/Private by design/)).toBeVisible();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText("Find My Fit · Oversized Graphic Tee")).toBeVisible();
+    await expect(dialog.getByText(/Verified Precision Merchant/)).toBeVisible();
+    await expect(dialog.getByText(/Private by design/)).toBeVisible();
 
     // Step flow: measurements → body shape → fit preference.
-    await page.getByRole("button", { name: "Next" }).click();
-    await expect(page.getByText("Body shape & composition")).toBeVisible();
-    await page.getByRole("button", { name: "Athletic", exact: true }).click();
-    await page.getByRole("button", { name: "Next" }).click();
-    await expect(page.getByText("How do you like it to fit?")).toBeVisible();
+    await dialog.getByRole("button", { name: "Next" }).click();
+    await expect(dialog.getByText("Body shape & composition")).toBeVisible();
+    await dialog.getByRole("button", { name: "Athletic", exact: true }).click();
+    await dialog.getByRole("button", { name: "Next" }).click();
+    await expect(dialog.getByText("How do you like it to fit?")).toBeVisible();
 
     // Apply the live recommendation — it must bind into the card size selector.
-    const applyBtn = page.getByRole("button", { name: /Select Size/ }).first();
+    const applyBtn = dialog.getByRole("button", { name: /Select Size/ }).first();
     await expect(applyBtn).toBeVisible();
     await applyBtn.click();
-    await expect(page.getByRole("dialog")).toBeHidden();
+    await expect(dialog).toBeHidden();
     await expect(page.getByText(/Maisonblock fit applied/)).toBeVisible();
   });
 });
