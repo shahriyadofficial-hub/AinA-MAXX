@@ -126,8 +126,8 @@ export default function ShopPage() {
         ))}
       </div>
 
-      {/* Product grid */}
-      <div className="grid gap-3">
+      {/* Product grid: Responsive 3-Column Desktop Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {visible.map((product) => {
           const inBag = bag.has(product.slug);
           return (

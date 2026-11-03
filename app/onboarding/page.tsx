@@ -131,7 +131,7 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto space-y-6 py-2">
+    <div className="w-full max-w-2xl mx-auto space-y-6 py-4">
       {/* Top Header & Step Indicator */}
       <div className="flex items-center justify-between">
         <AinaLogo size="sm" showSubtitle={false} />

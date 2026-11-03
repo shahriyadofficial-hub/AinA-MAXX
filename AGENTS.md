@@ -46,7 +46,7 @@
   - Primary Accent: `#FF2D95` (Neon Rose)
   - Secondary Accent: `#007BA7` (Cerulean)
   - Highlight Accent: `#3FB6E0` (Light Cerulean)
-  - Logo Lockup: White `Ai∩A` with `#FF2D95` dot on `i`, `∩` mirror arch, and spaced `#FF2D95` `M A X X` subtitle.
+  - Logo Lockup: Luminous Cerulean (`#007BA7` / `#3FB6E0`) `AinA` with `#FF2D95` Neon Rose glowing dot on `i`, and spaced `#FF2D95` `M A X X` subtitle.
 - **Security & RLS:**
   - Never expose `MODEL_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, or `GEMINI_API_KEY` to client components or public bundles.
   - User photos are strictly stored in private Supabase buckets with short-lived signed URLs.
