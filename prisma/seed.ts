@@ -276,6 +276,25 @@ export const LOOKBOOK_OUTFITS_SEED = [
   },
 ];
 
+// AinA Universal Fit — Bangladesh local brand size charts (baseline).
+// Mirrors LOCAL_BRAND_CHARTS in lib/engine/bangladeshSizing.ts so the API
+// and the on-device engine agree. Inches-first (দর্জি হিসাব).
+export const LOCAL_BRAND_CHARTS_SEED = [
+  // Aarong Panjabi
+  { brandName: "Aarong", garmentType: "PANJABI" as const, sizeLabel: "38", chestMinIn: 38, chestMaxIn: 39, lengthInches: 40, fabricType: "100% Cotton (Shrinks ~1in)", easeAllowanceIn: 3.0, shrinkageOffset: 0.5 },
+  { brandName: "Aarong", garmentType: "PANJABI" as const, sizeLabel: "40", chestMinIn: 40, chestMaxIn: 41, lengthInches: 41, fabricType: "100% Cotton (Shrinks ~1in)", easeAllowanceIn: 3.0, shrinkageOffset: 0.5 },
+  { brandName: "Aarong", garmentType: "PANJABI" as const, sizeLabel: "42", chestMinIn: 42, chestMaxIn: 43, lengthInches: 42, fabricType: "100% Cotton (Shrinks ~1in)", easeAllowanceIn: 3.0, shrinkageOffset: 0.5 },
+  { brandName: "Aarong", garmentType: "PANJABI" as const, sizeLabel: "44", chestMinIn: 44, chestMaxIn: 45, lengthInches: 43, fabricType: "100% Cotton (Shrinks ~1in)", easeAllowanceIn: 3.0, shrinkageOffset: 0.5 },
+  // Sailor / Yellow casual tops
+  { brandName: "Sailor / Yellow", garmentType: "CASUAL_SHIRT" as const, sizeLabel: "M", chestMinIn: 39, chestMaxIn: 40, lengthInches: 28, fabricType: "Cotton Blend", easeAllowanceIn: 2.5, shrinkageOffset: 0 },
+  { brandName: "Sailor / Yellow", garmentType: "CASUAL_SHIRT" as const, sizeLabel: "L", chestMinIn: 41, chestMaxIn: 42, lengthInches: 29, fabricType: "Cotton Blend", easeAllowanceIn: 2.5, shrinkageOffset: 0 },
+  { brandName: "Sailor / Yellow", garmentType: "CASUAL_SHIRT" as const, sizeLabel: "XL", chestMinIn: 43, chestMaxIn: 44, lengthInches: 30, fabricType: "Cotton Blend", easeAllowanceIn: 2.5, shrinkageOffset: 0 },
+  // Bangladeshi generic streetwear (Instagram f-commerce baseline)
+  { brandName: "Local Streetwear / F-Commerce", garmentType: "OVERSIZED_TEE" as const, sizeLabel: "M", chestMinIn: 40, chestMaxIn: 42, lengthInches: 28, fabricType: "Heavy Cotton 240 GSM", easeAllowanceIn: 5.5, shrinkageOffset: 0.5 },
+  { brandName: "Local Streetwear / F-Commerce", garmentType: "OVERSIZED_TEE" as const, sizeLabel: "L", chestMinIn: 42, chestMaxIn: 44, lengthInches: 29, fabricType: "Heavy Cotton 240 GSM", easeAllowanceIn: 5.5, shrinkageOffset: 0.5 },
+  { brandName: "Local Streetwear / F-Commerce", garmentType: "OVERSIZED_TEE" as const, sizeLabel: "XL", chestMinIn: 44, chestMaxIn: 46, lengthInches: 30, fabricType: "Heavy Cotton 240 GSM", easeAllowanceIn: 5.5, shrinkageOffset: 0.5 },
+];
+
 async function main() {
   console.log("🌱 Seeding AinA (Ai∩A MAXX) Database...");
 
@@ -370,6 +389,22 @@ async function main() {
         },
       });
     }
+  }
+
+  // 4. Seed AinA Universal Fit — Bangladesh brand charts
+  console.log("   -> Seeding 10 Bangladesh Local Brand Charts (Aarong / Sailor-Yellow / F-Commerce)...");
+  for (const chart of LOCAL_BRAND_CHARTS_SEED) {
+    await prisma.localBrandChart.upsert({
+      where: {
+        brandName_garmentType_sizeLabel: {
+          brandName: chart.brandName,
+          garmentType: chart.garmentType,
+          sizeLabel: chart.sizeLabel,
+        },
+      },
+      update: chart,
+      create: chart,
+    });
   }
 
   console.log("✅ Seed completed successfully!");

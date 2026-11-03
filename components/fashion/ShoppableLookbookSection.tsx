@@ -22,6 +22,7 @@ import {
 import { HotspotMarker } from "./HotspotMarker";
 import { ComboProductCard } from "./ComboProductCard";
 import { MaisonblockFittingModal } from "./sizing/MaisonblockFittingModal";
+import { UniversalFitModal } from "./sizing/UniversalFitModal";
 
 export function ShoppableLookbookSection() {
   const reduceMotion = useReducedMotion();
@@ -30,6 +31,7 @@ export function ShoppableLookbookSection() {
   const [selectedByLook, setSelectedByLook] = useState<Record<string, string[]>>({});
   const [sizeByProduct, setSizeByProduct] = useState<Record<string, string>>({});
   const [fitProduct, setFitProduct] = useState<LookProduct | null>(null);
+  const [universalProduct, setUniversalProduct] = useState<LookProduct | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -76,6 +78,17 @@ export function ShoppableLookbookSection() {
       setActiveProductId(productId);
       const product = look.products.find((p) => p.id === productId);
       showToast(`Maisonblock fit applied: ${product?.name ?? "Garment"} · Size ${size}. Nothing about your body left this device.`);
+    },
+    [look, showToast]
+  );
+
+  /** Universal Fit "Select Size" — binds into the card variant selector. */
+  const handleUniversalSelect = useCallback(
+    (productId: string, size: string) => {
+      setSizeByProduct((prev) => ({ ...prev, [productId]: size }));
+      setActiveProductId(productId);
+      const product = look.products.find((p) => p.id === productId);
+      showToast(`Universal Fit applied: ${product?.name ?? "Garment"} · Size ${size} (Bangladesh brand cross-check). Profile stays on your device.`);
     },
     [look, showToast]
   );
@@ -247,6 +260,7 @@ export function ShoppableLookbookSection() {
                   onToggle={handleToggle}
                   onHighlight={handleCardHighlight}
                   onFindMyFit={setFitProduct}
+                  onCheckMyFit={setUniversalProduct}
                 />
               ))}
             </div>
@@ -302,6 +316,14 @@ export function ShoppableLookbookSection() {
         product={fitProduct}
         onClose={() => setFitProduct(null)}
         onSelectSize={handleFitSelect}
+      />
+
+      {/* AinA Universal Fit — Bangladesh brand cross-check (all products) */}
+      <UniversalFitModal
+        open={universalProduct !== null}
+        product={universalProduct}
+        onClose={() => setUniversalProduct(null)}
+        onSelectSize={handleUniversalSelect}
       />
     </section>
   );

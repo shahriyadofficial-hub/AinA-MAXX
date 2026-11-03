@@ -50,6 +50,32 @@ enum AiInteractionStatus {
   fallback_used
 }
 
+// ── AinA Universal Fit (Bangladesh Edition) ─────────────────────────────
+// Local fit vocabulary — NOT European brand sizing. Inches-first (দর্জি হিসাব).
+enum LocalFitType {
+  SLIM_FIT
+  SEMI_FIT
+  REGULAR
+  RELAXED_OVERSIZED
+}
+
+enum BodyType {
+  SLIM
+  REGULAR
+  ATHLETIC
+  HEAVY_CHEST
+  ROUND_BELLY
+}
+
+enum GarmentCategory {
+  PANJABI
+  POLO_TSHIRT
+  OVERSIZED_TEE
+  CASUAL_SHIRT
+  FORMAL_SHIRT
+  TROUSER_DENIM
+}
+
 model Profile {
   id                  String             @id @default(uuid()) @db.Uuid
   displayName         String             @map("display_name") @db.VarChar(60)
@@ -83,6 +109,7 @@ model Profile {
   auditEvents         AuditEvent[]
   wardrobeItems       WardrobeItem[]
   outfits             Outfit[]
+  bodyProfile         UserBodyProfile?
 
   @@map("profiles")
 }
@@ -535,4 +562,50 @@ model OutfitItem {
 
   @@id([outfitId, wardrobeItemId])
   @@map("outfit_items")
+}
+
+// -- AinA Universal Fit (Bangladesh Edition) -----------------------------
+// PDPA 2026: body profiles are ONLY persisted after explicit in-app consent
+// (see /api/v1/size/profile). Guests calculate fully on-device; nothing here
+// is written without the consent toggle. Erasure = row delete (one tap).
+
+model UserBodyProfile {
+  id              String       @id @default(uuid()) @db.Uuid
+  userId          String?      @unique @map("user_id") @db.Uuid
+  deviceId        String?      @unique @map("device_id")
+  heightInches    Float        @map("height_inches")
+  weightKg        Float        @map("weight_kg")
+  chestInches     Float        @map("chest_inches")
+  waistInches     Float        @map("waist_inches")
+  shoulderInches  Float?       @map("shoulder_inches")
+  panjabiLengthIn Float?       @map("panjabi_length_in")
+  fitPreference   LocalFitType @default(SEMI_FIT) @map("fit_preference")
+  bodyComposition BodyType?    @default(REGULAR) @map("body_composition")
+  consentGranted  Boolean      @default(false) @map("consent_granted")
+  createdAt       DateTime     @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt       DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  user            Profile?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_body_profiles")
+}
+
+model LocalBrandChart {
+  id              String          @id @default(uuid()) @db.Uuid
+  brandName       String          @map("brand_name") @db.VarChar(60)
+  garmentType     GarmentCategory @map("garment_type")
+  sizeLabel       String          @map("size_label") @db.VarChar(10)
+  chestMinIn      Float           @map("chest_min_in")
+  chestMaxIn      Float           @map("chest_max_in")
+  lengthInches    Float           @map("length_inches")
+  shoulderInches  Float?          @map("shoulder_inches")
+  fabricType      String          @map("fabric_type") @db.VarChar(80)
+  easeAllowanceIn Float           @default(2.5) @map("ease_allowance_in")
+  shrinkageOffset Float           @default(0.5) @map("shrinkage_offset")
+  createdAt       DateTime        @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt       DateTime        @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  @@unique([brandName, garmentType, sizeLabel])
+  @@index([brandName, garmentType])
+  @@map("local_brand_charts")
 }

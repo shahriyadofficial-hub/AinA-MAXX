@@ -22,6 +22,8 @@ interface ComboProductCardProps {
   onHighlight: (productId: string | null) => void;
   /** Opens the Maisonblock Fitting Engine (verified merchants only). */
   onFindMyFit: (product: LookProduct) => void;
+  /** Opens AinA Universal Fit (Bangladesh brand cross-check, all products). */
+  onCheckMyFit: (product: LookProduct) => void;
 }
 
 const CATEGORY_LABEL: Record<LookProduct["category"], string> = {
@@ -31,7 +33,7 @@ const CATEGORY_LABEL: Record<LookProduct["category"], string> = {
   accessory: "Accessory",
 };
 
-export function ComboProductCard({ product, highlighted, selected, size, onSizeChange, onToggle, onHighlight, onFindMyFit }: ComboProductCardProps) {
+export function ComboProductCard({ product, highlighted, selected, size, onSizeChange, onToggle, onHighlight, onFindMyFit, onCheckMyFit }: ComboProductCardProps) {
   const verified = hasVerifiedSizing(product);
 
   return (
@@ -99,6 +101,17 @@ export function ComboProductCard({ product, highlighted, selected, size, onSizeC
               {selected ? `Added · ${size}` : `Add · ${size}`}
             </button>
           </div>
+
+          {/* AinA Universal Fit — Bangladesh brand cross-check (every product) */}
+          <button
+            type="button"
+            data-testid={`check-my-fit-${product.id}`}
+            onClick={() => onCheckMyFit(product)}
+            className="mt-2 inline-flex min-h-[40px] w-full items-center justify-center gap-2 rounded-full border border-aina-cerulean/50 bg-aina-cerulean/10 px-3 text-[11px] font-extrabold text-aina-light-cerulean transition hover:bg-aina-cerulean/20 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-aina-cerulean"
+          >
+            <Ruler className="h-3.5 w-3.5" aria-hidden="true" />
+            <span className="font-bengali">মাপে ঠিক হবে তো?</span> · Check My Fit
+          </button>
 
           {/* Maisonblock Fitting Engine — verified merchants only */}
           {verified ? (

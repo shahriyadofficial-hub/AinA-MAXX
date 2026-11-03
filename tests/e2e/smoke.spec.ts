@@ -213,4 +213,40 @@ test.describe("AinA MAXX — judge smoke suite", () => {
     await dialog.getByRole("button", { name: /Close archive entry/ }).click();
     await expect(dialog).toBeHidden();
   });
+
+  test("universal fit: tailor mode cross-checks BD brands and binds the size", async ({ page }) => {
+    await page.goto("/drip");
+    // Switch to the Eid look first so the panjabi card exists in the sidebar.
+    await page.getByRole("tab", { name: /06 Eid Evening/ }).click();
+    await page.getByTestId("check-my-fit-p-panjabi-eid").scrollIntoViewIfNeeded();
+    await page.getByTestId("check-my-fit-p-panjabi-eid").click();
+
+    const dialog = page.getByRole("dialog", { name: /AinA Universal Fit/ });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText("Quick Tailor Mode")).toBeVisible();
+    await expect(dialog.getByText("Local Brand Cross-Check")).toBeVisible();
+    // Bilingual verdict + PDPA consent copy.
+    await expect(dialog.getByText(/ideal for Dhaka humidity/)).toBeVisible();
+    await expect(dialog.getByText(/আপনার শারীরিক মাপ নিরাপদভাবে সংরক্ষিত হবে/)).toBeVisible();
+
+    // Default tailor profile (chest 40, semi-fit) → Aarong 40.
+    await expect(dialog.getByText("Aarong: Size 40 (Best Fit)", { exact: false })).toBeVisible();
+
+    await dialog.getByRole("button", { name: /Select Size/ }).click();
+    await expect(dialog).toBeHidden();
+    await expect(page.getByText(/Universal Fit applied/)).toBeVisible();
+  });
+
+  test("universal fit: erase wipes measurement data (PDPA 2026)", async ({ page }) => {
+    await page.goto("/drip");
+    await page.getByRole("tab", { name: /06 Eid Evening/ }).click();
+    await page.getByTestId("check-my-fit-p-panjabi-eid").click();
+    const dialog = page.getByRole("dialog", { name: /AinA Universal Fit/ });
+    await expect(dialog).toBeVisible();
+
+    await dialog.getByRole("button", { name: /Erase Data/ }).click();
+    await expect(dialog.getByText(/all measurement data erased/)).toBeVisible();
+    const stored = await page.evaluate(() => localStorage.getItem("ainafit_profile"));
+    expect(stored).toBeNull();
+  });
 });
