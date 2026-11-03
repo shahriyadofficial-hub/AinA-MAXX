@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { SkinScanner, useScanProgress, type ScanState } from "@/components/coded/SkinScanner";
 import { BarberCard } from "@/components/coded/BarberCard";
+import Image from "next/image";
+import { MODEL_PHOTOS, portraitUrl } from "@/lib/media/photos";
 import type { SkinGuidance, BarberCard as BarberCardData } from "@/lib/ai/types";
 
 type Locale = "en" | "bn";
@@ -354,16 +356,31 @@ export default function CodedPage() {
               </button>
             </section>
           ) : (
-            <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center space-y-2 bg-aina-graphite/20">
-              <Scissors className="w-8 h-8 text-neutral-500 mx-auto" />
-              <h3 className="text-sm font-bold text-neutral-300 font-display">
-                {bn ? "কোনো স্ক্যান ফলাফল নেই" : "No Scan Results Yet"}
-              </h3>
-              <p className="text-xs text-neutral-500 max-w-sm mx-auto">
-                {bn
-                  ? "বামপাশের প্যানেল থেকে একটি প্রাইভেট ছবি দিয়ে ভিশন নির্দেশনা শুরু করুন।"
-                  : "Upload a photo on the left to generate scientific skin barrier guidance and a Bangla/English barber reference card."}
-              </p>
+            <div className="overflow-hidden rounded-2xl border border-dashed border-white/10 bg-aina-graphite/20">
+              <div className="relative h-44 sm:h-52">
+                <Image
+                  src={portraitUrl(MODEL_PHOTOS.barberMood, 900)}
+                  alt={MODEL_PHOTOS.barberMood.alt}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-cover"
+                />
+                <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-aina-black via-aina-black/30 to-transparent" />
+                <p className="absolute bottom-3 left-4 text-[10px] font-bold uppercase tracking-[0.18em] text-aina-light-cerulean">
+                  {bn ? "বারবার-রেডি লুক" : "Barber-ready looks"}
+                </p>
+              </div>
+              <div className="p-8 pt-5 text-center space-y-2">
+                <Scissors className="w-8 h-8 text-neutral-500 mx-auto" />
+                <h3 className="text-sm font-bold text-neutral-300 font-display">
+                  {bn ? "কোনো স্ক্যান ফলাফল নেই" : "No Scan Results Yet"}
+                </h3>
+                <p className="text-xs text-neutral-500 max-w-sm mx-auto">
+                  {bn
+                    ? "বামপাশের প্যানেল থেকে একটি প্রাইভেট ছবি দিয়ে ভিশন নির্দেশনা শুরু করুন।"
+                    : "Upload a photo on the left to generate scientific skin barrier guidance and a Bangla/English barber reference card."}
+                </p>
+              </div>
             </div>
           )}
 

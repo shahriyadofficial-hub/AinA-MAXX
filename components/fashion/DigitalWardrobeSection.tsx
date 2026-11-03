@@ -7,8 +7,10 @@
 // with a graceful offline fallback so the demo never hard-fails.
 
 import React, { useMemo, useRef, useState } from "react";
-import { CheckCircle2, Loader2, RefreshCw, Scissors, Shirt, UploadCloud } from "lucide-react";
+import Image from "next/image";
+import { CheckCircle2, Loader2, RefreshCw, Scissors, UploadCloud } from "lucide-react";
 import { DEMO_WARDROBE, costPerWearBDT, type WardrobeItem } from "@/lib/fashion/wardrobe";
+import { GARMENT_PHOTO_SET, squareUrl } from "@/lib/media/photos";
 import { formatLookBdt } from "@/lib/fashion/lookbook";
 
 type CutoutPhase = "idle" | "uploading" | "segmenting" | "done" | "error";
@@ -53,6 +55,7 @@ export function DigitalWardrobeSection() {
         wears: 1,
         samConfidence: 0.95,
         cutoutReady: true,
+        image: squareUrl(GARMENT_PHOTO_SET[prev.length % GARMENT_PHOTO_SET.length]),
       },
       ...prev,
     ]);
@@ -170,13 +173,16 @@ export function DigitalWardrobeSection() {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {items.map((item) => (
           <article key={item.id} className="group overflow-hidden rounded-3xl border border-white/10 bg-aina-graphite transition hover:border-aina-cerulean/40">
-            <div
-              className="checkerboard relative flex aspect-square items-center justify-center"
-              role="img"
-              aria-label={`${item.name} — ${item.cutoutReady ? "SAM 3.1 transparent cutout" : "cutout pending"}`}
-            >
-              <Shirt className="h-14 w-14 transition-transform duration-300 group-hover:scale-110" style={{ color: item.colorHex === "#E4E4E7" ? "#E4E4E7" : item.colorHex }} aria-hidden="true" />
-              <span className={`absolute left-2 top-2 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${item.cutoutReady ? "bg-emerald-500/20 text-emerald-300" : "bg-amber-500/20 text-amber-300"}`}>
+            <div className="relative aspect-square overflow-hidden bg-aina-dark">
+              <Image
+                src={item.image}
+                alt={`${item.name} — ${item.colorName}`}
+                fill
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
+              <span className={`absolute left-2 top-2 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider backdrop-blur-md ${item.cutoutReady ? "bg-emerald-500/25 text-emerald-200" : "bg-amber-500/25 text-amber-200"}`}>
                 {item.cutoutReady ? "SAM 3.1 cutout" : "Processing"}
               </span>
               <span className="absolute bottom-2 right-2 rounded-full bg-black/70 px-2 py-0.5 text-[9px] font-bold text-neutral-300">

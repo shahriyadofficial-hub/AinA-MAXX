@@ -3,6 +3,12 @@
 // Pure data + physics helpers (no React, no network, no secrets).
 // The 3D scene consumes these helpers so every behaviour is unit-testable
 // without rendering a single frame.
+//
+// Photography: `image` is a real garment photograph (Unsplash, verified in
+// lib/media/photos.ts) used by the 2D fallback track and Quick View; the
+// procedural SVG `cutout` is retained as an offline last-resort only.
+
+import { PRODUCT_PHOTOS, squareUrl } from "@/lib/media/photos";
 
 export interface RailProduct {
   id: string;
@@ -18,8 +24,10 @@ export interface RailProduct {
   colorHex: string;
   /** Accent colour for trims / back print. */
   accentColor: string;
-  /** 2D cutout used by the low-end CSS fallback track. */
+  /** Real garment photograph (2D fallback track + Quick View). */
   image: string;
+  /** Offline SVG cutout (last-resort if the CDN is unreachable). */
+  cutout: string;
   availableSizes: string[];
   /** Short label printed on the back of the garment (visible at 180°). */
   backLabel: string;
@@ -51,7 +59,8 @@ export const RAIL_PRODUCTS: RailProduct[] = [
     inStock: true,
     colorHex: "#232326",
     accentColor: "#FF2D95",
-    image: cutout({ body: "#232326", accent: "#FF2D95", label: "Heavyweight Oversized Hoodie" }),
+    image: squareUrl(PRODUCT_PHOTOS.hoodieFlat),
+    cutout: cutout({ body: "#232326", accent: "#FF2D95", label: "Heavyweight Oversized Hoodie" }),
     availableSizes: ["S", "M", "L", "XL"],
     backLabel: "AINA HEAVY 450",
   },
@@ -65,7 +74,8 @@ export const RAIL_PRODUCTS: RailProduct[] = [
     inStock: true,
     colorHex: "#F4F1EA",
     accentColor: "#FF2D95",
-    image: cutout({ body: "#F4F1EA", accent: "#FF2D95", label: "Oversized Graphic Tee" }),
+    image: squareUrl(PRODUCT_PHOTOS.teesRail),
+    cutout: cutout({ body: "#F4F1EA", accent: "#FF2D95", label: "Oversized Graphic Tee" }),
     availableSizes: ["S", "M", "L", "XL"],
     backLabel: "RICKSHAW CLUB",
   },
@@ -79,7 +89,8 @@ export const RAIL_PRODUCTS: RailProduct[] = [
     inStock: true,
     colorHex: "#27272A",
     accentColor: "#3FB6E0",
-    image: cutout({ body: "#27272A", accent: "#3FB6E0", label: "DWR Utility Bomber" }),
+    image: squareUrl(PRODUCT_PHOTOS.leatherJacket),
+    cutout: cutout({ body: "#27272A", accent: "#3FB6E0", label: "DWR Utility Bomber" }),
     availableSizes: ["M", "L", "XL"],
     backLabel: "MONSOON PROOF",
   },
@@ -93,7 +104,8 @@ export const RAIL_PRODUCTS: RailProduct[] = [
     inStock: true,
     colorHex: "#3E4A3A",
     accentColor: "#3FB6E0",
-    image: cutout({ body: "#3E4A3A", accent: "#3FB6E0", label: "Ripstop Cargo Overshirt" }),
+    image: squareUrl(PRODUCT_PHOTOS.shirtsRail),
+    cutout: cutout({ body: "#3E4A3A", accent: "#3FB6E0", label: "Ripstop Cargo Overshirt" }),
     availableSizes: ["S", "M", "L"],
     backLabel: "TAILOR LAB 06",
   },
@@ -107,7 +119,8 @@ export const RAIL_PRODUCTS: RailProduct[] = [
     inStock: true,
     colorHex: "#E8DFC8",
     accentColor: "#FF2D95",
-    image: cutout({ body: "#E8DFC8", accent: "#FF2D95", label: "Hand-Embroidered Panjabi" }),
+    image: squareUrl(PRODUCT_PHOTOS.whiteTee),
+    cutout: cutout({ body: "#E8DFC8", accent: "#FF2D95", label: "Hand-Embroidered Panjabi" }),
     availableSizes: ["38", "40", "42", "44"],
     backLabel: "EID CRAFT",
   },
@@ -121,7 +134,8 @@ export const RAIL_PRODUCTS: RailProduct[] = [
     inStock: false,
     colorHex: "#2E3D55",
     accentColor: "#E8E8E5",
-    image: cutout({ body: "#2E3D55", accent: "#E8E8E5", label: "Washed Denim Trucker Jacket" }),
+    image: squareUrl(PRODUCT_PHOTOS.denimStack),
+    cutout: cutout({ body: "#2E3D55", accent: "#E8E8E5", label: "Washed Denim Trucker Jacket" }),
     availableSizes: ["M", "L", "XL"],
     backLabel: "GAZIPUR WASH",
   },
@@ -135,7 +149,8 @@ export const RAIL_PRODUCTS: RailProduct[] = [
     inStock: true,
     colorHex: "#007BA7",
     accentColor: "#3FB6E0",
-    image: cutout({ body: "#007BA7", accent: "#3FB6E0", label: "Cerulean Knit Crew Sweater" }),
+    image: squareUrl(PRODUCT_PHOTOS.knitDetail),
+    cutout: cutout({ body: "#007BA7", accent: "#3FB6E0", label: "Cerulean Knit Crew Sweater" }),
     availableSizes: ["S", "M", "L", "XL"],
     backLabel: "CERULEAN KNIT",
   },

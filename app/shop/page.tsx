@@ -3,6 +3,7 @@
 // app/shop/page.tsx
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ShoppingBag, Plus, Check } from "lucide-react";
+import Image from "next/image";
 import { RoutineBag } from "@/components/maxx/RoutineBag";
 import {
   SHOP_PRODUCTS,
@@ -133,15 +134,26 @@ export default function ShopPage() {
           return (
             <article
               key={product.slug}
-              className="space-y-2 rounded-aina border border-white/10 bg-aina-graphite p-4"
+              className="group space-y-3 overflow-hidden rounded-aina border border-white/10 bg-aina-graphite p-4 transition hover:border-white/25"
             >
+              <div className="relative -mx-4 -mt-4 aspect-[16/10] overflow-hidden bg-aina-dark">
+                <Image
+                  src={product.image}
+                  alt={product.name}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-t from-aina-graphite via-transparent to-transparent" />
+                <span className="absolute bottom-2 right-3 font-display text-base font-extrabold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+                  {formatBdt(product.priceBdt)}
+                </span>
+              </div>
               <div className="flex items-center justify-between gap-2">
                 <span className="rounded-full bg-aina-cerulean/20 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-aina-light-cerulean">
                   {product.brand}
                 </span>
-                <span className="font-display text-sm font-extrabold text-white">
-                  {formatBdt(product.priceBdt)}
-                </span>
+                <span className="text-xs font-semibold text-neutral-400">{product.category}</span>
               </div>
 
               <h2 className="text-xs font-bold leading-relaxed text-white">{product.name}</h2>

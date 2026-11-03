@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, Html, Float } from "@react-three/drei";
 import * as THREE from "three";
@@ -36,6 +36,26 @@ function StylizedGarment({
 }: GarmentMeshProps) {
   const groupRef = useRef<THREE.Group>(null);
 
+  // Tailored torso: lathe profile with shoulder slope, tapered waist and hem flare.
+  const torsoGeometry = useMemo(() => {
+    const profile: Array<[number, number]> = [
+      [0.3, 1.06],
+      [0.42, 1.0],
+      [0.58, 0.86],
+      [0.6, 0.6],
+      [0.56, 0.3],
+      [0.53, 0.05],
+      [0.55, -0.25],
+      [0.6, -0.5],
+      [0.66, -0.72],
+      [0.68, -0.8],
+    ];
+    const points = profile.map(([x, y]) => new THREE.Vector2(x, y));
+    const geo = new THREE.LatheGeometry(points, 48);
+    geo.computeVertexNormals();
+    return geo;
+  }, []);
+
   // Subtle breathing idle rotation
   useFrame((state) => {
     if (groupRef.current) {
@@ -59,9 +79,7 @@ function StylizedGarment({
       </mesh>
 
       {/* --- Main Torso (Tailored Kurta / Streetwear Silhouette) --- */}
-      <mesh position={[0, 0.25, 0]}>
-        {/* Custom tapered profile */}
-        <cylinderGeometry args={[0.55, 0.68, 1.6, 32, 4]} />
+      <mesh position={[0, 0.25, 0]} geometry={torsoGeometry}>
         <meshStandardMaterial
           color={color}
           roughness={0.68}
@@ -330,7 +348,7 @@ export function GarmentScene3D({
       {activeTag && (
         <div className="absolute bottom-4 left-4 z-20 pointer-events-none">
           <div className="px-3.5 py-1.5 rounded-full bg-aina-rose/90 backdrop-blur-md text-black font-extrabold text-xs shadow-glow-rose flex items-center space-x-1.5 animate-bounce">
-            <span>🔍 Focused: {activeTag.label}</span>
+            <span>Focused: {activeTag.label}</span>
           </div>
         </div>
       )}

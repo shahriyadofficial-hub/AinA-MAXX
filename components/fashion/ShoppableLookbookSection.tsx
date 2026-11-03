@@ -175,11 +175,12 @@ export function ShoppableLookbookSection() {
                 src={look.modelImage}
                 alt={`${look.title} — full look worn by model`}
                 fill
-                unoptimized
                 priority={lookIndex === 0}
                 sizes="(max-width: 1024px) 100vw, 58vw"
-                className="object-contain object-bottom p-4 pt-14"
+                className="object-cover object-center"
               />
+              {/* Editorial legibility gradients (photo stays the hero) */}
+              <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/35" />
 
               {/* Hotspots */}
               {look.hotspots.map((hotspot) => (
@@ -211,6 +212,11 @@ export function ShoppableLookbookSection() {
                   <ChevronRight className="h-4 w-4" />
                 </button>
               </div>
+
+              {/* Photo credit (Unsplash License provenance) */}
+              <p className="absolute bottom-4 right-4 z-20 hidden text-[10px] font-medium text-white/60 sm:block">
+                Photo · {look.modelCredit} / Unsplash
+              </p>
 
               {/* Active hotspot readout */}
               <div aria-live="polite" className="absolute inset-x-4 bottom-4 z-20">

@@ -4,6 +4,14 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db/client";
 import { SHOP_PRODUCTS } from "@/lib/gamification/maxx";
+import { PRODUCT_PHOTOS, squareUrl } from "@/lib/media/photos";
+
+const FALLBACK_IMAGES = [
+  squareUrl(PRODUCT_PHOTOS.skincareShelf),
+  squareUrl(PRODUCT_PHOTOS.skincareDropper),
+  squareUrl(PRODUCT_PHOTOS.skincareCream),
+  squareUrl(PRODUCT_PHOTOS.groomingKit),
+];
 
 /**
  * Curated BDT shop catalog. DB first (seeded products), curated
@@ -22,7 +30,7 @@ export async function GET() {
     if (products && products.length > 0) {
       return NextResponse.json({
         data: {
-          products: products.map((p) => ({
+          products: products.map((p, i) => ({
             slug: p.slug,
             name: p.name,
             brand: p.brand ?? "",
@@ -31,6 +39,9 @@ export async function GET() {
             priceBdt: p.currentPrice ? Number(p.currentPrice) : 0,
             sellerName: p.sellerName ?? "AinA Verified",
             isAffiliate: p.isAffiliate,
+            image:
+              SHOP_PRODUCTS.find((s) => s.slug === p.slug)?.image ??
+              FALLBACK_IMAGES[i % FALLBACK_IMAGES.length],
           })),
         },
         meta: { source: "database", currency: "BDT", timestamp: new Date().toISOString() },

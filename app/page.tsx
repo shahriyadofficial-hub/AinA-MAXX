@@ -16,6 +16,8 @@ import {
   Award,
 } from "lucide-react";
 import { AinaLogo } from "@/components/brand/AinaLogo";
+import Image from "next/image";
+import { MODEL_PHOTOS, PRODUCT_PHOTOS, PHOTO_LICENSE_NOTE, photoUrl, portraitUrl } from "@/lib/media/photos";
 import { MirrorReportCard } from "@/components/maxx/MirrorReportCard";
 import { Leaderboard } from "@/components/maxx/Leaderboard";
 import {
@@ -25,6 +27,44 @@ import {
   buildMirrorReport,
 } from "@/lib/gamification/maxx";
 import { getCuratedFallbackRoadmap } from "@/lib/roadmap/fallback";
+
+const TRENDING_LOOKS = [
+  {
+    src: portraitUrl(MODEL_PHOTOS.streetEditorial, 520),
+    alt: MODEL_PHOTOS.streetEditorial.alt,
+    tag: "Street",
+    title: "Dhaka Street Editorial",
+    note: "Relaxed layers built for humid evenings",
+  },
+  {
+    src: portraitUrl(MODEL_PHOTOS.monoNight, 520),
+    alt: MODEL_PHOTOS.monoNight.alt,
+    tag: "Monochrome",
+    title: "Mono Night Fit",
+    note: "One-tone dressing, zero effort look",
+  },
+  {
+    src: portraitUrl(MODEL_PHOTOS.smartCasual, 520),
+    alt: MODEL_PHOTOS.smartCasual.alt,
+    tag: "Smart casual",
+    title: "Office-to-Adda",
+    note: "Sharp enough for work, easy for after",
+  },
+  {
+    src: portraitUrl(MODEL_PHOTOS.linenMood, 520),
+    alt: MODEL_PHOTOS.linenMood.alt,
+    tag: "Breathable",
+    title: "Linen Monsoon Mood",
+    note: "Airy fabrics that survive the rain season",
+  },
+  {
+    src: photoUrl(PRODUCT_PHOTOS.leatherJacket, 520),
+    alt: PRODUCT_PHOTOS.leatherJacket.alt,
+    tag: "Statement",
+    title: "Leather Jacket Edit",
+    note: "The one piece that upgrades everything",
+  },
+] as const;
 
 export default function HomePage() {
   const fallbackTasks = getCuratedFallbackRoadmap().tasks.map((t) => ({
@@ -41,13 +81,22 @@ export default function HomePage() {
 
   return (
     <div className="space-y-8">
-      {/* Brand Hero Showcase Card */}
-      <section className="relative overflow-hidden rounded-2xl md:rounded-3xl p-6 sm:p-8 lg:p-12 bg-gradient-to-br from-aina-graphite via-aina-dark to-aina-black border border-white/10 shadow-2xl">
-        {/* Ambient Glows */}
-        <div className="absolute -top-16 -right-16 w-64 h-64 md:w-96 md:h-96 bg-aina-rose/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-16 -left-16 w-64 h-64 md:w-96 md:h-96 bg-aina-cerulean/20 rounded-full blur-3xl pointer-events-none" />
+      {/* Brand Hero Showcase — real editorial photography */}
+      <section className="relative overflow-hidden rounded-2xl md:rounded-3xl border border-white/10 shadow-2xl">
+        <Image
+          src={portraitUrl(MODEL_PHOTOS.heroPortrait, 1600)}
+          alt={MODEL_PHOTOS.heroPortrait.alt}
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center"
+        />
+        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-aina-black/95 via-aina-black/70 to-aina-black/15" />
+        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-aina-black/85 via-transparent to-aina-black/30" />
+        <div className="absolute -top-16 -right-16 w-64 h-64 md:w-96 md:h-96 bg-aina-rose/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-16 -left-16 w-64 h-64 md:w-96 md:h-96 bg-aina-cerulean/25 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 p-6 sm:p-8 lg:p-12">
           {/* Hero Left / Center Content */}
           <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-4 max-w-2xl">
             <AinaLogo size="lg" showSubtitle={true} variant="primary" />
@@ -308,6 +357,45 @@ export default function HomePage() {
           <MirrorReportCard report={mirrorReport} />
           <Leaderboard entries={leaderboard} />
         </div>
+      </section>
+
+      {/* Trending Looks — real photography strip */}
+      <section className="space-y-4">
+        <div className="flex items-end justify-between px-1">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-aina-rose">Trending this week</p>
+            <h2 className="text-lg sm:text-xl font-extrabold font-display text-white">Looks men in Dhaka are saving</h2>
+          </div>
+          <Link href="/drip" className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-aina-light-cerulean hover:text-white transition-colors">
+            <span>Open 3D Lookbook</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+        <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {TRENDING_LOOKS.map((look) => (
+            <Link
+              key={look.title}
+              href="/drip"
+              className="group relative w-[68vw] max-w-[260px] shrink-0 snap-start overflow-hidden rounded-2xl border border-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-aina-rose"
+            >
+              <Image
+                src={look.src}
+                alt={look.alt}
+                width={520}
+                height={650}
+                sizes="(max-width: 640px) 68vw, 260px"
+                className="aspect-[4/5] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-aina-black/90 via-aina-black/10 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 p-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-aina-light-cerulean">{look.tag}</p>
+                <p className="mt-1 text-sm font-bold text-white font-display">{look.title}</p>
+                <p className="text-[11px] text-neutral-300">{look.note}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+        <p className="px-1 text-[11px] text-neutral-500">{PHOTO_LICENSE_NOTE}</p>
       </section>
 
       {/* Safety & Legal Guardrail Banner */}

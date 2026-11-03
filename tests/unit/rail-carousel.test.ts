@@ -26,7 +26,8 @@ describe("RAIL catalogue data contracts", () => {
       expect(p.microBn.length).toBeGreaterThan(0);
       expect(p.availableSizes.length).toBeGreaterThan(0);
       expect(p.backLabel).toBeTruthy();
-      expect(p.image.startsWith("data:image/svg+xml,")).toBe(true);
+      expect(p.image.startsWith("https://images.unsplash.com/")).toBe(true);
+      expect(p.cutout.startsWith("data:image/svg+xml,")).toBe(true);
       expect(p.colorHex).toMatch(/^#[0-9A-Fa-f]{6}$/);
     }
   });

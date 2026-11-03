@@ -6,7 +6,11 @@
 // Asset note: `layers.base` follows the archive contract
 // (/assets/orzr/*.png). Until real transparent PNG cutouts are placed in
 // public/assets/orzr/, `silhouette` provides an inline high-contrast SVG
-// fallback so the experience renders identically offline.
+// fallback so the experience renders identically offline. `photo` is a real
+// editorial photograph (Unsplash, verified in lib/media/photos.ts) shown as
+// the archive's photographic plate alongside the layered silhouette.
+
+import { PRODUCT_PHOTOS, photoUrl } from "@/lib/media/photos";
 
 export type OrzrCategory = "CLOTHING" | "ACCESSORY";
 
@@ -27,6 +31,8 @@ export interface OrzrItem {
   };
   /** Inline SVG silhouette used until the PNG asset exists. */
   silhouette: string;
+  /** Real editorial photograph for the archive plate (Unsplash CDN). */
+  photo: string;
 }
 
 function silhouetteUri(body: string, detail: string, kind: "garment" | "ring" | "strap" | "frame"): string {
@@ -68,6 +74,7 @@ export const ORZR_CATALOG: OrzrItem[] = [
     details: ["100% Japanese Cotton", "Relaxed Proportion", "Cold Wash Only"],
     material: "MATERIAL: DRY POPLIN",
     layers: { base: "/assets/orzr/shirt-base.png", shadow: "/assets/orzr/shirt-shadow.png" },
+    photo: photoUrl(PRODUCT_PHOTOS.whiteTee, 900),
     silhouette: silhouetteUri("#EDEDE8", "#8A8A84", "garment"),
   },
   {
@@ -80,6 +87,7 @@ export const ORZR_CATALOG: OrzrItem[] = [
     details: ["450 GSM French Terry", "Double-layer Hood", "Garment-dyed"],
     material: "MATERIAL: HEAVY COTTON",
     layers: { base: "/assets/orzr/hoodie-base.png", shadow: "/assets/orzr/hoodie-shadow.png" },
+    photo: photoUrl(PRODUCT_PHOTOS.hoodieFlat, 900),
     silhouette: silhouetteUri("#232326", "#FF2D95", "garment"),
   },
   {
@@ -92,6 +100,7 @@ export const ORZR_CATALOG: OrzrItem[] = [
     details: ["Compact Cotton Twill", "Single Pleat", "Hand-finished Hem"],
     material: "MATERIAL: COMPACT TWILL",
     layers: { base: "/assets/orzr/trouser-base.png" },
+    photo: photoUrl(PRODUCT_PHOTOS.denimStack, 900),
     silhouette: silhouetteUri("#3E4A5A", "#3FB6E0", "garment"),
   },
   {
@@ -104,6 +113,7 @@ export const ORZR_CATALOG: OrzrItem[] = [
     details: ["DWR Sealed Seams", "Two-way Zip", "Packable Hood"],
     material: "MATERIAL: RIPSTOP NYLON",
     layers: { base: "/assets/orzr/shell-base.png", shadow: "/assets/orzr/shell-shadow.png" },
+    photo: photoUrl(PRODUCT_PHOTOS.leatherJacket, 900),
     silhouette: silhouetteUri("#1E293B", "#3FB6E0", "garment"),
   },
   {
@@ -116,6 +126,7 @@ export const ORZR_CATALOG: OrzrItem[] = [
     details: ["925 Sterling Silver", "Hand-finished in Tokyo", "Weight: 18g"],
     material: "MATERIAL: STERLING SILVER",
     layers: { base: "/assets/orzr/ring-base.png" },
+    photo: photoUrl(PRODUCT_PHOTOS.watchGold, 900),
     silhouette: silhouetteUri("#C9C9CE", "#FFFFFF", "ring"),
   },
   {
@@ -128,6 +139,7 @@ export const ORZR_CATALOG: OrzrItem[] = [
     details: ["316L Steel Case", "Raw-cut Leather Strap", "Engraved Caseback"],
     material: "MATERIAL: STEEL / LEATHER",
     layers: { base: "/assets/orzr/chrono-base.png" },
+    photo: photoUrl(PRODUCT_PHOTOS.watchFlat, 900),
     silhouette: silhouetteUri("#3A3A40", "#1A1A1A", "strap"),
   },
   {
@@ -140,6 +152,7 @@ export const ORZR_CATALOG: OrzrItem[] = [
     details: ["Italian Acetate", "Five-barrel Hinges", "Hand-polished"],
     material: "MATERIAL: ACETATE",
     layers: { base: "/assets/orzr/frame-base.png" },
+    photo: photoUrl(PRODUCT_PHOTOS.sunglasses, 900),
     silhouette: silhouetteUri("#EDEDE8", "#8A8A84", "frame"),
   },
 ];

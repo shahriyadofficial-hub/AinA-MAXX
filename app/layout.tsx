@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/navigation/Navbar";
 import BottomNav from "@/components/navigation/BottomNav";
 import { CoachDrawer } from "@/components/coach/CoachDrawer";
+import { MODEL_PHOTOS, portraitUrl } from "@/lib/media/photos";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -24,11 +25,25 @@ const notoSansBengali = Noto_Sans_Bengali({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
   title: "AinA (Ai∩A MAXX) — Reflect the Prime You",
   description: "AI-guided personal transformation platform for skin, hair, fitness, food, fashion and grooming. Meta Global AI Developer Hackathon.",
-  manifest: "/manifest.json",
+  manifest: "/manifest.webmanifest",
   icons: {
-    icon: "/favicon.ico",
+    icon: "/icon.svg",
+    apple: "/apple-icon.svg",
+  },
+  openGraph: {
+    title: "AinA (Ai∩A MAXX) — Reflect the Prime You",
+    description: "AI-guided skin, hair, fitness and fashion transformation for Bangladesh's climate. Powered by Meta Muse & SAM 3.1.",
+    type: "website",
+    images: [{ url: portraitUrl(MODEL_PHOTOS.heroPortrait, 1200), alt: MODEL_PHOTOS.heroPortrait.alt }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AinA (Ai∩A MAXX) — Reflect the Prime You",
+    description: "AI-guided skin, hair, fitness and fashion transformation for Bangladesh's climate.",
+    images: [portraitUrl(MODEL_PHOTOS.heroPortrait, 1200)],
   },
 };
 

@@ -2,6 +2,14 @@
 // AinA Drip — Shoppable Lookbook data model & pure bundle/selection logic.
 // No React, no network, no secrets: safe to import from client components,
 // server code, and unit tests alike.
+//
+// Photography: real copyright-free editorial/product photos from the
+// verified Unsplash catalog (lib/media/photos.ts). The previous inline SVG
+// silhouettes read as "AI demo" on camera; real fabric and real styling is
+// what makes the lookbook showcase-ready. Hotspot coordinates below are
+// tuned to each photograph's composition (percent of the 4:5 panel).
+
+import { MODEL_PHOTOS, PRODUCT_PHOTOS, portraitUrl, squareUrl } from "@/lib/media/photos";
 
 export interface Hotspot {
   id: string;
@@ -21,7 +29,7 @@ export interface LookProduct {
   brand: string;
   category: LookProductCategory;
   priceBDT: number;
-  /** Product cutout / thumbnail image (SVG data-URI friendly). */
+  /** Real product photograph (Unsplash CDN, square crop via next/image). */
   image: string;
   availableSizes: string[];
   inStock: boolean;
@@ -54,10 +62,12 @@ export interface LookbookItem {
   occasionBn: string;
   ghostText: string;
   accentColor: string;
-  /** Two-stop gradient used to render the model panel (no stock photos needed). */
+  /** Two-stop gradient behind the photograph (panel tint while it loads). */
   modelGradient: [string, string];
-  /** Full-height cutout/look photograph. Inline SVG keeps the demo offline-safe. */
+  /** Full-height editorial look photograph (real model, Unsplash CDN). */
   modelImage: string;
+  /** Photographer credit for the look photograph (provenance line). */
+  modelCredit: string;
   hotspots: Hotspot[];
   products: LookProduct[];
   /** e.g. 10 → 10% off the full-look bundle */
@@ -65,72 +75,11 @@ export interface LookbookItem {
 }
 
 // ---------------------------------------------------------------------------
-// Inline SVG artwork (data URIs) — deterministic, offline, zero paid API calls.
-// The model panel is a stylised full-height silhouette; product thumbs are
-// garment glyphs. Both honour the AinA tokens (#0A0A0A / #FF2D95 / #007BA7).
+// Photography: real editorial/product photos (Unsplash License, verified
+// in lib/media/photos.ts). Model panels use the 4:5 portrait crop; product
+// thumbs use the square crop. No generated or vector placeholder imagery.
 // ---------------------------------------------------------------------------
 
-function svgUri(svg: string): string {
-  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
-}
-
-function modelArt(input: {
-  top: string;
-  bottom: string;
-  shoes: string;
-  accent: string;
-  label: string;
-}): string {
-  const { top, bottom, shoes, accent, label } = input;
-  return svgUri(
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 560" role="img" aria-label="${label}">` +
-      `<defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">` +
-      `<stop offset="0" stop-color="#1A1A1D"/><stop offset="1" stop-color="#0A0A0A"/></linearGradient></defs>` +
-      `<rect width="360" height="560" fill="url(#bg)"/>` +
-      `<ellipse cx="180" cy="512" rx="118" ry="16" fill="${accent}" opacity="0.28"/>` +
-      // head + neck (silhouette only — no facial detail, no scoring)
-      `<circle cx="180" cy="86" r="34" fill="#2A2A2E"/>` +
-      `<rect x="168" y="112" width="24" height="22" rx="8" fill="#2A2A2E"/>` +
-      // top garment
-      `<path d="M118 140 Q180 118 242 140 L262 268 Q180 288 98 268 Z" fill="${top}"/>` +
-      `<rect x="172" y="140" width="16" height="118" rx="8" fill="${accent}" opacity="0.85"/>` +
-      // arms
-      `<path d="M104 148 Q78 236 92 306 L116 300 Q106 232 122 168 Z" fill="${top}"/>` +
-      `<path d="M256 148 Q282 236 268 306 L244 300 Q254 232 238 168 Z" fill="${top}"/>` +
-      // bottom garment
-      `<path d="M112 272 L248 272 L240 452 L196 452 L182 330 L168 452 L120 452 Z" fill="${bottom}"/>` +
-      // shoes
-      `<path d="M118 452 L170 452 L176 478 Q146 488 112 480 Z" fill="${shoes}"/>` +
-      `<path d="M190 452 L244 452 L250 480 Q216 488 186 478 Z" fill="${shoes}"/>` +
-      `<rect x="150" y="238" width="60" height="10" rx="5" fill="${accent}"/>` +
-      `</svg>`
-  );
-}
-
-function productArt(input: { bg: string; glyph: string; accent: string; label: string }): string {
-  const { bg, glyph, accent, label } = input;
-  return svgUri(
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="${label}">` +
-      `<rect width="120" height="120" rx="20" fill="${bg}"/>` +
-      `<path d="${glyph}" fill="${accent}"/>` +
-      `</svg>`
-  );
-}
-
-const GLYPH: Record<LookProductCategory, string> = {
-  // tee / shirt silhouette
-  top: "M38 30 L58 22 Q60 30 70 30 L82 30 L94 48 L80 56 L80 94 L40 94 L40 56 L26 48 Z",
-  // trouser silhouette
-  bottom: "M40 22 L80 22 L84 96 L68 96 L61 52 L54 96 L38 96 Z",
-  // shoe silhouette
-  shoes: "M22 74 Q44 58 62 62 L96 74 L98 88 L22 88 Z M22 88 L98 88 L98 94 L22 94 Z",
-  // watch / accessory silhouette
-  accessory:
-    "M52 14 L68 14 L68 30 L52 30 Z M52 90 L68 90 L68 106 L52 106 Z M60 34 A26 26 0 1 0 60 86 A26 26 0 1 0 60 34 Z",
-};
-
-// ---------------------------------------------------------------------------
-// Curated looks — real Bangladeshi-context styling, BDT pricing, bilingual.
 // ---------------------------------------------------------------------------
 
 export const LOOKBOOK_ITEMS: LookbookItem[] = [
@@ -143,13 +92,8 @@ export const LOOKBOOK_ITEMS: LookbookItem[] = [
     ghostText: "STUDIO DAY",
     accentColor: "#FF2D95",
     modelGradient: ["#2A1420", "#0A0A0A"],
-    modelImage: modelArt({
-      top: "#F4F1EA",
-      bottom: "#3E4A5A",
-      shoes: "#EDEDED",
-      accent: "#FF2D95",
-      label: "Studio Day look — oversized graphic tee, wide trousers, chunky sneakers",
-    }),
+    modelImage: portraitUrl(MODEL_PHOTOS.streetEditorial),
+    modelCredit: MODEL_PHOTOS.streetEditorial.credit,
     bundleDiscountPercent: 10,
     products: [
       {
@@ -158,7 +102,7 @@ export const LOOKBOOK_ITEMS: LookbookItem[] = [
         brand: "AinA Studio",
         category: "top",
         priceBDT: 1450,
-        image: productArt({ bg: "#F4F1EA", glyph: GLYPH.top, accent: "#FF2D95", label: "Oversized Graphic Tee" }),
+        image: squareUrl(PRODUCT_PHOTOS.teesRail),
         availableSizes: ["S", "M", "L", "XL"],
         inStock: true,
         // AinA Studio is a Verified Precision Merchant for this SKU.
@@ -179,7 +123,7 @@ export const LOOKBOOK_ITEMS: LookbookItem[] = [
         brand: "Dhaka Tailor Lab",
         category: "bottom",
         priceBDT: 2250,
-        image: productArt({ bg: "#3E4A5A", glyph: GLYPH.bottom, accent: "#3FB6E0", label: "Wide-Leg Pleated Trousers" }),
+        image: squareUrl(PRODUCT_PHOTOS.denimStack),
         availableSizes: ["30", "32", "34", "36"],
         inStock: true,
       },
@@ -189,7 +133,7 @@ export const LOOKBOOK_ITEMS: LookbookItem[] = [
         brand: "Bata Premium BD",
         category: "shoes",
         priceBDT: 3450,
-        image: productArt({ bg: "#EDEDED", glyph: GLYPH.shoes, accent: "#0A0A0A", label: "Chunky Court Sneakers" }),
+        image: squareUrl(PRODUCT_PHOTOS.sneakersWhite),
         availableSizes: ["40", "41", "42", "43", "44"],
         inStock: true,
       },
@@ -199,7 +143,7 @@ export const LOOKBOOK_ITEMS: LookbookItem[] = [
         brand: "AinA Studio",
         category: "accessory",
         priceBDT: 4950,
-        image: productArt({ bg: "#1A1A1D", glyph: GLYPH.accessory, accent: "#3FB6E0", label: "Matte Steel Chrono Watch" }),
+        image: squareUrl(PRODUCT_PHOTOS.watchSteel),
         availableSizes: ["One Size"],
         inStock: true,
       },
@@ -220,13 +164,8 @@ export const LOOKBOOK_ITEMS: LookbookItem[] = [
     ghostText: "MONSOON CALM",
     accentColor: "#3FB6E0",
     modelGradient: ["#0E2432", "#0A0A0A"],
-    modelImage: modelArt({
-      top: "#27272A",
-      bottom: "#1E293B",
-      shoes: "#0F172A",
-      accent: "#3FB6E0",
-      label: "Monsoon Minimalist look — DWR bomber, quick-dry joggers, waterproof boots",
-    }),
+    modelImage: portraitUrl(MODEL_PHOTOS.monoNight),
+    modelCredit: MODEL_PHOTOS.monoNight.credit,
     bundleDiscountPercent: 12,
     products: [
       {
@@ -235,7 +174,7 @@ export const LOOKBOOK_ITEMS: LookbookItem[] = [
         brand: "AinA Studio",
         category: "top",
         priceBDT: 3850,
-        image: productArt({ bg: "#27272A", glyph: GLYPH.top, accent: "#3FB6E0", label: "DWR Utility Bomber" }),
+        image: squareUrl(PRODUCT_PHOTOS.leatherJacket),
         availableSizes: ["M", "L", "XL"],
         inStock: true,
         hasAccurateSizing: true,
@@ -254,7 +193,7 @@ export const LOOKBOOK_ITEMS: LookbookItem[] = [
         brand: "Dhaka Tailor Lab",
         category: "bottom",
         priceBDT: 1950,
-        image: productArt({ bg: "#1E293B", glyph: GLYPH.bottom, accent: "#3FB6E0", label: "Quick-Dry Ripstop Joggers" }),
+        image: squareUrl(PRODUCT_PHOTOS.jeansDetail),
         availableSizes: ["30", "32", "34"],
         inStock: true,
       },
@@ -264,7 +203,7 @@ export const LOOKBOOK_ITEMS: LookbookItem[] = [
         brand: "Apex BD",
         category: "shoes",
         priceBDT: 4200,
-        image: productArt({ bg: "#0F172A", glyph: GLYPH.shoes, accent: "#3FB6E0", label: "Waterproof Chelsea Boots" }),
+        image: squareUrl(PRODUCT_PHOTOS.sneakersPair),
         availableSizes: ["41", "42", "43"],
         inStock: false,
       },
@@ -274,7 +213,7 @@ export const LOOKBOOK_ITEMS: LookbookItem[] = [
         brand: "AinA Studio",
         category: "accessory",
         priceBDT: 950,
-        image: productArt({ bg: "#1A1A1D", glyph: GLYPH.accessory, accent: "#FF2D95", label: "Sealed-Seam Tech Cap" }),
+        image: squareUrl(PRODUCT_PHOTOS.capDetail),
         availableSizes: ["One Size"],
         inStock: true,
       },
@@ -295,13 +234,8 @@ export const LOOKBOOK_ITEMS: LookbookItem[] = [
     ghostText: "EID EVENING",
     accentColor: "#FF2D95",
     modelGradient: ["#241428", "#0A0A0A"],
-    modelImage: modelArt({
-      top: "#E8DFC8",
-      bottom: "#F1EDE2",
-      shoes: "#78350F",
-      accent: "#FF2D95",
-      label: "Eid Evening look — embroidered panjabi, relaxed slacks, leather loafers",
-    }),
+    modelImage: portraitUrl(MODEL_PHOTOS.smartCasual),
+    modelCredit: MODEL_PHOTOS.smartCasual.credit,
     bundleDiscountPercent: 10,
     products: [
       {
@@ -310,7 +244,7 @@ export const LOOKBOOK_ITEMS: LookbookItem[] = [
         brand: "Aarong Craft",
         category: "top",
         priceBDT: 3250,
-        image: productArt({ bg: "#E8DFC8", glyph: GLYPH.top, accent: "#FF2D95", label: "Hand-Embroidered Panjabi" }),
+        image: squareUrl(PRODUCT_PHOTOS.whiteTee),
         availableSizes: ["38", "40", "42", "44"],
         inStock: true,
         verifiedSizing: true,
@@ -330,7 +264,7 @@ export const LOOKBOOK_ITEMS: LookbookItem[] = [
         brand: "Dhaka Tailor Lab",
         category: "bottom",
         priceBDT: 1850,
-        image: productArt({ bg: "#F1EDE2", glyph: GLYPH.bottom, accent: "#007BA7", label: "Ivory Relaxed Slacks" }),
+        image: squareUrl(PRODUCT_PHOTOS.teeStack),
         availableSizes: ["30", "32", "34", "36"],
         inStock: true,
       },
@@ -340,7 +274,7 @@ export const LOOKBOOK_ITEMS: LookbookItem[] = [
         brand: "Apex BD",
         category: "shoes",
         priceBDT: 3950,
-        image: productArt({ bg: "#78350F", glyph: GLYPH.shoes, accent: "#EDEDED", label: "Cognac Penny Loafers" }),
+        image: squareUrl(PRODUCT_PHOTOS.sneakersColour),
         availableSizes: ["40", "41", "42", "43"],
         inStock: true,
       },
@@ -350,7 +284,7 @@ export const LOOKBOOK_ITEMS: LookbookItem[] = [
         brand: "AinA Studio",
         category: "accessory",
         priceBDT: 1250,
-        image: productArt({ bg: "#1A1A1D", glyph: GLYPH.accessory, accent: "#FF2D95", label: "Oud Attar Evening" }),
+        image: squareUrl(PRODUCT_PHOTOS.watchGold),
         availableSizes: ["12ml"],
         inStock: true,
       },

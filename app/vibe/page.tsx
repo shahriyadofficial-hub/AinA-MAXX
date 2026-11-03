@@ -3,6 +3,8 @@
 // app/vibe/page.tsx
 import React, { useCallback, useEffect, useState } from "react";
 import { Flame, Heart, MessageCircle, Send, ShieldCheck, Sparkles, Loader2, Users } from "lucide-react";
+import Image from "next/image";
+import { MODEL_PHOTOS, squareUrl, type StockPhoto } from "@/lib/media/photos";
 import {
   VIBE_SEED_POSTS,
   type VibePost,
@@ -13,6 +15,8 @@ type Locale = "en" | "bn";
 interface VibeFeedResponse {
   data: { posts: VibePost[] };
 }
+
+const VIBE_AVATARS: StockPhoto[] = [MODEL_PHOTOS.vibeOne, MODEL_PHOTOS.vibeTwo, MODEL_PHOTOS.vibeThree];
 
 export default function VibePage() {
   const [locale, setLocale] = useState<Locale>("en");
@@ -178,12 +182,21 @@ export default function VibePage() {
           </div>
 
           <div className="space-y-3">
-            {posts.map((post) => (
+            {posts.map((post, postIndex) => (
               <article key={post.id} className="space-y-3 rounded-2xl border border-white/10 bg-aina-graphite p-5 shadow-xl hover:border-white/20 transition-all">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-aina-rose to-aina-cerulean font-display text-xs font-extrabold text-white shadow-md">
-                    {post.authorName.slice(0, 2).toUpperCase()}
-                  </div>
+                  {(() => {
+                    const avatar = VIBE_AVATARS[postIndex % VIBE_AVATARS.length];
+                    return (
+                      <Image
+                        src={squareUrl(avatar, 80)}
+                        alt={avatar.alt}
+                        width={40}
+                        height={40}
+                        className="h-10 w-10 shrink-0 rounded-2xl object-cover border border-white/10 shadow-md"
+                      />
+                    );
+                  })()}
                   <div>
                     <p className="text-sm font-bold text-white">{post.authorName}</p>
                     <p className="flex items-center gap-1.5 text-xs text-neutral-400 mt-0.5">

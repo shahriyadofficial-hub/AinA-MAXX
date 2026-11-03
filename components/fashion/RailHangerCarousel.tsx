@@ -260,8 +260,9 @@ function RailFallbackTrack({
             <svg viewBox="0 0 100 26" className="mx-auto h-6 w-20 text-neutral-500" aria-hidden="true">
               <path d="M50 2 a5 5 0 1 1 5 5 M50 12 L8 24 M50 12 L92 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
             </svg>
+            {/* Real garment photograph */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={product.image} alt="" className="mx-auto h-36 w-auto" />
+            <img src={product.image} alt="" className="mx-auto aspect-square w-full rounded-2xl border border-white/10 object-cover" />
             <p className="mt-2 line-clamp-2 min-h-[2rem] text-xs font-bold text-white">{product.title}</p>
             <p className="mt-1 text-xs font-black text-aina-rose">{formatRailBdt(product.priceBDT)}</p>
             {!product.inStock && (
@@ -310,7 +311,7 @@ function RailQuickView({
 
         <div className="mt-4 flex items-center gap-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={product.image} alt="" className="h-28 w-auto rounded-2xl bg-aina-black/60 p-2" />
+          <img src={product.image} alt="" className="h-28 w-28 shrink-0 rounded-2xl border border-white/10 object-cover" />
           <div>
             <p className="font-display text-2xl font-black text-aina-rose">{formatRailBdt(product.priceBDT)}</p>
             <p className="mt-1 text-xs leading-relaxed text-neutral-400">{product.microDescription}</p>

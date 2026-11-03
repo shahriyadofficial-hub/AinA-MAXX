@@ -3,6 +3,7 @@
 // Pure functions only (no React / network) so every rule is unit-testable.
 
 import type { LookProductCategory } from "./lookbook";
+import { PRODUCT_PHOTOS, squareUrl } from "@/lib/media/photos";
 
 export type WardrobeCategory = LookProductCategory | "outerwear";
 export type OccasionId = "eid" | "campus" | "monsoon" | "office" | "evening";
@@ -18,6 +19,8 @@ export interface WardrobeItem {
   /** SAM 3.1 segmentation confidence 0–1, shown as provenance (never a score of the person). */
   samConfidence: number;
   cutoutReady: boolean;
+  /** Real garment photograph (Unsplash CDN) shown on the wardrobe tile. */
+  image: string;
 }
 
 export interface OccasionCombo {
@@ -39,12 +42,12 @@ export const OCCASIONS: Array<{ id: OccasionId; labelEn: string; labelBn: string
 ];
 
 export const DEMO_WARDROBE: WardrobeItem[] = [
-  { id: "w-kurta", name: "Obsidian Black Kurta", category: "top", colorName: "Obsidian", colorHex: "#18181B", priceBDT: 2450, wears: 14, samConfidence: 0.97, cutoutReady: true },
-  { id: "w-tee", name: "Heavyweight Prime Tee", category: "top", colorName: "Jet Black", colorHex: "#0D0D10", priceBDT: 1450, wears: 22, samConfidence: 0.96, cutoutReady: true },
-  { id: "w-chinos", name: "Slim Pleat Chinos", category: "bottom", colorName: "Olive Earth", colorHex: "#3F4E3A", priceBDT: 2150, wears: 11, samConfidence: 0.95, cutoutReady: true },
-  { id: "w-sneakers", name: "Bone White Lows", category: "shoes", colorName: "Bone White", colorHex: "#E4E4E7", priceBDT: 3450, wears: 18, samConfidence: 0.98, cutoutReady: true },
-  { id: "w-bomber", name: "DWR Utility Bomber", category: "outerwear", colorName: "Charcoal", colorHex: "#27272A", priceBDT: 3850, wears: 6, samConfidence: 0.94, cutoutReady: true },
-  { id: "w-watch", name: "Matte Steel Chrono", category: "accessory", colorName: "Steel", colorHex: "#3A3A40", priceBDT: 4950, wears: 26, samConfidence: 0.93, cutoutReady: false },
+  { id: "w-kurta", name: "Obsidian Black Kurta", category: "top", colorName: "Obsidian", colorHex: "#18181B", priceBDT: 2450, wears: 14, samConfidence: 0.97, cutoutReady: true, image: squareUrl(PRODUCT_PHOTOS.whiteTee) },
+  { id: "w-tee", name: "Heavyweight Prime Tee", category: "top", colorName: "Jet Black", colorHex: "#0D0D10", priceBDT: 1450, wears: 22, samConfidence: 0.96, cutoutReady: true, image: squareUrl(PRODUCT_PHOTOS.teesRail) },
+  { id: "w-chinos", name: "Slim Pleat Chinos", category: "bottom", colorName: "Olive Earth", colorHex: "#3F4E3A", priceBDT: 2150, wears: 11, samConfidence: 0.95, cutoutReady: true, image: squareUrl(PRODUCT_PHOTOS.denimStack) },
+  { id: "w-sneakers", name: "Bone White Lows", category: "shoes", colorName: "Bone White", colorHex: "#E4E4E7", priceBDT: 3450, wears: 18, samConfidence: 0.98, cutoutReady: true, image: squareUrl(PRODUCT_PHOTOS.sneakersWhite) },
+  { id: "w-bomber", name: "DWR Utility Bomber", category: "outerwear", colorName: "Charcoal", colorHex: "#27272A", priceBDT: 3850, wears: 6, samConfidence: 0.94, cutoutReady: true, image: squareUrl(PRODUCT_PHOTOS.leatherJacket) },
+  { id: "w-watch", name: "Matte Steel Chrono", category: "accessory", colorName: "Steel", colorHex: "#3A3A40", priceBDT: 4950, wears: 26, samConfidence: 0.93, cutoutReady: false, image: squareUrl(PRODUCT_PHOTOS.watchSteel) },
 ];
 
 /** Cost per wear in BDT, rounded to whole taka. Guards divide-by-zero. */

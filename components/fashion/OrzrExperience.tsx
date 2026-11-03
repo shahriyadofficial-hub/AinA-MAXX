@@ -100,11 +100,21 @@ function OrzrDetailOverlay({ item, onClose }: { item: OrzrItem; onClose: () => v
         className="grid max-h-[92vh] w-full max-w-4xl grid-cols-1 gap-0 overflow-y-auto border border-[#333] bg-black sm:mx-4 md:grid-cols-2"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Left focal frame */}
-        <div className="relative flex items-center justify-center border-b border-[#1A1A1A] bg-[#050505] px-8 py-10 md:border-b-0 md:border-r">
-          <span className="orzr-meta absolute left-5 top-5 text-neutral-500">{item.number}</span>
-          <span className="orzr-meta absolute bottom-5 left-5 text-neutral-600">{item.material}</span>
-          <OrzrLayers item={item} dragOffset={0} lifted large />
+        {/* Left focal frame — real photographic plate + layered silhouette */}
+        <div className="relative flex items-center justify-center overflow-hidden border-b border-[#1A1A1A] bg-[#050505] px-8 py-10 md:border-b-0 md:border-r">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={item.photo}
+            alt=""
+            draggable={false}
+            className="absolute inset-0 h-full w-full object-cover opacity-45"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/55" aria-hidden="true" />
+          <span className="orzr-meta absolute left-5 top-5 z-10 text-neutral-300">{item.number}</span>
+          <span className="orzr-meta absolute bottom-5 left-5 z-10 text-neutral-400">{item.material}</span>
+          <div className="relative z-10">
+            <OrzrLayers item={item} dragOffset={0} lifted large />
+          </div>
         </div>
 
         {/* Right typographic breakdown */}
@@ -493,7 +503,7 @@ export function OrzrExperience() {
               >
                 <span className="orzr-meta w-16 shrink-0 text-neutral-500">{item.number}</span>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={item.silhouette} alt="" className="h-12 w-10 shrink-0 object-contain" />
+                <img src={item.photo} alt="" className="h-12 w-12 shrink-0 border border-[#1A1A1A] object-cover" />
                 <span className="min-w-0">
                   <span className="block truncate font-display text-sm font-black uppercase tracking-wide">{item.name}</span>
                   <span className="orzr-meta mt-0.5 block text-neutral-500">{item.material}</span>

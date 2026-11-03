@@ -17,6 +17,8 @@ import {
   Maximize2,
   Sliders,
 } from "lucide-react";
+import Image from "next/image";
+import { MODEL_PHOTOS, portraitUrl } from "@/lib/media/photos";
 import type { FloatingTag } from "./GarmentScene3D";
 
 // Dynamically import GarmentScene3D with ssr: false for zero SSR issues and performance
@@ -42,6 +44,8 @@ export interface OutfitLook {
   ghostText: string;
   accentColor: string;
   garmentColor: string;
+  image: string;
+  imageAlt: string;
   priceBdt: number;
   occasion: string;
   tags: FloatingTag[];
@@ -62,6 +66,8 @@ export const CURATED_LOOKS: OutfitLook[] = [
     ghostText: "WEAR IT LOUD",
     accentColor: "#FF2D95", // Neon Rose
     garmentColor: "#18181B",
+    image: portraitUrl(MODEL_PHOTOS.streetEditorial, 720),
+    imageAlt: MODEL_PHOTOS.streetEditorial.alt,
     priceBdt: 2450,
     occasion: "Street Casual",
     tags: [
@@ -122,6 +128,8 @@ export const CURATED_LOOKS: OutfitLook[] = [
     ghostText: "PRIME YOU",
     accentColor: "#007BA7", // Cerulean
     garmentColor: "#27272A",
+    image: portraitUrl(MODEL_PHOTOS.monoNight, 720),
+    imageAlt: MODEL_PHOTOS.monoNight.alt,
     priceBdt: 3850,
     occasion: "Weather Defense",
     tags: [
@@ -182,6 +190,8 @@ export const CURATED_LOOKS: OutfitLook[] = [
     ghostText: "STAY SHARP",
     accentColor: "#3FB6E0", // Light Cerulean
     garmentColor: "#E2DDD5",
+    image: portraitUrl(MODEL_PHOTOS.smartCasual, 720),
+    imageAlt: MODEL_PHOTOS.smartCasual.alt,
     priceBdt: 3200,
     occasion: "Office & Evening",
     tags: [
@@ -242,6 +252,8 @@ export const CURATED_LOOKS: OutfitLook[] = [
     ghostText: "REFLECT PRIME",
     accentColor: "#FF2D95", // Neon Rose
     garmentColor: "#0D0D10",
+    image: portraitUrl(MODEL_PHOTOS.heroPortrait, 720),
+    imageAlt: MODEL_PHOTOS.heroPortrait.alt,
     priceBdt: 2150,
     occasion: "Night Out / Club",
     tags: [
@@ -500,16 +512,19 @@ export function Interactive3DLookbook() {
                 style={{ transform: "translateZ(40px)" }}
               >
                 <div
-                  className="w-48 h-64 sm:w-60 sm:h-80 rounded-3xl shadow-2xl border border-white/10 flex items-center justify-center p-6 text-center"
+                  className="relative w-48 h-64 sm:w-60 sm:h-80 rounded-3xl shadow-2xl border border-white/10 overflow-hidden"
                   style={{
-                    backgroundColor: currentLook.garmentColor,
                     boxShadow: `0 25px 60px -15px ${currentLook.accentColor}40`,
                   }}
                 >
-                  <Shirt
-                    className="w-24 h-24 sm:w-32 sm:h-32 transition-transform duration-300"
-                    style={{ color: currentLook.accentColor }}
+                  <Image
+                    src={currentLook.image}
+                    alt={currentLook.imageAlt}
+                    fill
+                    sizes="(max-width: 640px) 192px, 240px"
+                    className="object-cover"
                   />
+                  <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
                 </div>
 
                 <div className="mt-4 text-center">
