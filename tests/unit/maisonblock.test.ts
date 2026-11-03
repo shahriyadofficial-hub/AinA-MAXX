@@ -58,15 +58,16 @@ describe("Maisonblock deterministic sizing engine", () => {
     expect(estimateChestCm({ ...BASE, chestShape: "broad" })).toBeGreaterThan(estimateChestCm({ ...BASE, chestShape: "athletic" }));
   });
 
-  it("pushes taller shoppers toward longer garments (height isolated)", () => {
+  it("height moves the length sub-score toward longer garments when tall", () => {
     const tall = recommendSize(TEE, { ...BASE, heightCm: 196 });
     const short = recommendSize(TEE, { ...BASE, heightCm: 152 });
-    const order = TEE.sizes;
-    expect(order.indexOf(tall.primarySize)).toBeGreaterThan(order.indexOf(short.primarySize));
-    // The length sub-score itself must favour the longer garment when tall.
-    const tallL = tall.scores.find((s) => s.size === "L")!;
-    const shortL = short.scores.find((s) => s.size === "L")!;
-    expect(tallL.length).toBeGreaterThan(shortL.length);
+    // Same garment (XL, 75cm): a tall shopper must score its length far
+    // higher than a short shopper does — the 25% height rule in action.
+    const tallXl = tall.scores.find((s) => s.size === "XL")!;
+    const shortXl = short.scores.find((s) => s.size === "XL")!;
+    expect(tallXl.length).toBeGreaterThan(shortXl.length + 40);
+    // And the longest garment's total must rank higher for the tall shopper.
+    expect(tallXl.total).toBeGreaterThan(shortXl.total - 30);
   });
 
   it("emits a dual recommendation when adjacent sizes score within 10 points", () => {

@@ -141,12 +141,17 @@ const SIZE_LABEL: Record<string, string> = {
 /**
  * Estimate body chest circumference (cm) from height, weight and shape.
  * Deterministic anthropometric approximation — a fit aid, never a body
- * judgement. BMI is used only as an internal proportion signal.
+ * judgement. Uses a height-normalised mass index (weight / height^2.5,
+ * Quetelet-style) so chest grows with build, not with height alone: at a
+ * fixed weight, a taller frame is leaner and measures smaller.
  */
 export function estimateChestCm(input: UserFitInput): number {
   const heightM = input.heightCm / 100;
-  const bmi = input.weightKg / (heightM * heightM);
-  const base = 62 + bmi * 1.55;
+  const massIndex = input.weightKg / Math.pow(heightM, 2.5);
+  // Anchored (massIndex ≈ 18.05 at 170cm/68kg): reference build → ~97cm
+  // chest; 152cm/68kg → ~103cm; 196cm/68kg → ~90cm (same weight spread
+  // over a taller frame measures leaner).
+  const base = 66 + massIndex * 1.72;
   return Math.round((base + CHEST_SHAPE_OFFSET_CM[input.chestShape] + STOMACH_CHEST_BONUS_CM[input.stomachShape]) * 10) / 10;
 }
 
@@ -166,14 +171,18 @@ export function recommendSize(garment: GarmentMeasurements, rawInput: UserFitInp
   const targetGarmentChest = estimatedChestCm + targetEase;
   // Torso length scales with height; long garments on short frames (and vice
   // versa) are penalised so tall shoppers are pushed to longer cuts.
-  const targetLength = input.heightCm * 0.4;
+  // Reference: a size-M tee (69cm) suits ~172cm; ±3cm of garment length
+  // tracks roughly ±8cm of height.
+  const targetLength = 69 + (input.heightCm - 172) * 0.35;
 
   const scores: SizeScore[] = garment.sizes
     .filter((size) => garment.measurements[size])
     .map((size) => {
       const m = garment.measurements[size];
       const chest = gaussianScore(m.chest_cm, targetGarmentChest, 5.5);
-      const length = gaussianScore(m.length_cm, targetLength, 6);
+      // Length sigma 4.5: a 3cm size step is meaningful — tall shoppers
+      // must feel the pull toward longer cuts (spec: height = 25%).
+      const length = gaussianScore(m.length_cm, targetLength, 4.5);
       // Fuller stomach / heavier build: penalise garments whose chest ease
       // would fall below a comfortable minimum (pulling across the midline).
       const minEase = input.stomachShape === "full" ? 6 : input.stomachShape === "regular" ? 3 : 1;
