@@ -28,11 +28,16 @@ const notoSansBengali = Noto_Sans_Bengali({
 export const metadata: Metadata = {
   // Guarded: a malformed NEXT_PUBLIC_APP_URL must never throw at module
   // evaluation (that crashes every route, including the error pages).
+  // Normalizes stray whitespace/brackets and a missing scheme, then falls
+  // back to the production origin — never localhost in a deployed build.
   metadataBase: (() => {
+    const fallback = "https://aina-maxx.vercel.app";
+    const raw = (process.env.NEXT_PUBLIC_APP_URL || "").trim().replace(/^\[|\]$/g, "");
+    const candidate = raw ? (raw.startsWith("http") ? raw : `https://${raw}`) : fallback;
     try {
-      return new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000");
+      return new URL(candidate);
     } catch {
-      return new URL("http://localhost:3000");
+      return new URL(fallback);
     }
   })(),
   title: "AinA (Ai∩A MAXX) — Reflect the Prime You",

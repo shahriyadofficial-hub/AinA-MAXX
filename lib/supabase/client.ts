@@ -25,9 +25,23 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 let cachedClient: SupabaseClient | null = null;
 let warnedMissingConfig = false;
 
-/** True when both public Supabase credentials are present in this bundle. */
+/** True when the value parses as an absolute http(s) URL. */
+function isValidHttpUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * True when both public Supabase credentials are present in this bundle
+ * AND the URL actually parses — a malformed env value (blank, bracketed,
+ * scheme-less garbage) counts as unconfigured, never as a crash.
+ */
 export function isSupabaseConfigured(): boolean {
-  return Boolean(supabaseUrl && supabaseAnonKey);
+  return Boolean(supabaseUrl && supabaseAnonKey && isValidHttpUrl(supabaseUrl));
 }
 
 /**
@@ -40,7 +54,7 @@ export function createClient(): SupabaseClient | null {
     if (!warnedMissingConfig) {
       warnedMissingConfig = true;
       console.warn(
-        "⚠️ Supabase client initialized without NEXT_PUBLIC keys. Running in offline/mock mode."
+        "⚠️ Supabase client initialized without valid NEXT_PUBLIC keys. Running in offline/mock mode."
       );
     }
     return null;

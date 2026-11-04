@@ -165,6 +165,37 @@ describe("Guarded browser APIs", () => {
   it("layout metadataBase cannot throw on a malformed NEXT_PUBLIC_APP_URL", () => {
     const src = read("app/layout.tsx");
     expect(src).toContain("try {");
-    expect(src).toContain('new URL("http://localhost:3000")');
+    // Production origin is the fallback — never localhost in a deploy.
+    expect(src).toContain('"https://aina-maxx.vercel.app"');
+    expect(src).toContain("new URL(fallback)");
+    expect(src).not.toContain("localhost:3000");
+  });
+
+  it("supabase clients treat a malformed (unparseable) URL as unconfigured", async () => {
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "[not-a-url]");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "some-key");
+    vi.resetModules();
+    const browser = await import("@/lib/supabase/client");
+    expect(browser.isSupabaseConfigured()).toBe(false);
+    expect(browser.createClient()).toBeNull();
+    const server = await import("@/lib/supabase/server");
+    await expect(server.createClient()).resolves.toBeNull();
+  });
+
+  it("app/not-found.tsx is a plain, self-contained static page", () => {
+    expect(existsSync(path.join(root, "app/not-found.tsx"))).toBe(true);
+    const src = read("app/not-found.tsx");
+    expect(src).toContain('export const dynamic = "force-static"');
+    expect(src).toContain("export default function NotFound");
+    // No external calls or heavy imports — prerendering must never throw.
+    // (Assertions target code/imports, not prose in the header comment.)
+    const code = src
+      .split("\n")
+      .filter((line) => !line.trim().startsWith("//"))
+      .join("\n");
+    expect(code).not.toContain("fetch(");
+    expect(code).not.toMatch(/from\s+["'][^"']*(supabase|prisma)/i);
+    expect(code).not.toContain("new URL(");
+    expect(code).not.toContain("process.env");
   });
 });

@@ -18,13 +18,23 @@ type CookieToSet = { name: string; value: string; options: CookieOptions };
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
+/** True when the value parses as an absolute http(s) URL. */
+function isValidHttpUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Cookie-aware server client bound to the current request, or `null` when
  * Supabase is not configured. Never throws for missing env.
  */
 export async function createClient(): Promise<SupabaseClient | null> {
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn("⚠️ Supabase server client skipped: NEXT_PUBLIC keys missing. Offline/mock mode.");
+  if (!isValidHttpUrl(supabaseUrl) || !supabaseAnonKey) {
+    console.warn("⚠️ Supabase server client skipped: NEXT_PUBLIC keys missing or URL malformed. Offline/mock mode.");
     return null;
   }
 
@@ -60,8 +70,8 @@ export async function createClient(): Promise<SupabaseClient | null> {
  */
 export function createAdminClient(): SupabaseClient | null {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-  if (!supabaseUrl || !serviceRoleKey) {
-    console.warn("⚠️ Supabase admin client skipped: URL or service-role key missing.");
+  if (!isValidHttpUrl(supabaseUrl) || !serviceRoleKey) {
+    console.warn("⚠️ Supabase admin client skipped: URL missing/malformed or service-role key missing.");
     return null;
   }
   try {
