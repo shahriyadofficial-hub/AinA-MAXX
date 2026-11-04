@@ -230,6 +230,8 @@ export interface GarmentScene3DProps {
   activeTag: FloatingTag | null;
   onSelectTag: (tag: FloatingTag) => void;
   onResetView: () => void;
+  /** Called when the WebGL canvas fails to create or loses its context. */
+  onCanvasError?: () => void;
 }
 
 export function GarmentScene3D({
@@ -240,6 +242,7 @@ export function GarmentScene3D({
   activeTag,
   onSelectTag,
   onResetView,
+  onCanvasError,
 }: GarmentScene3DProps) {
   const scale = isMobile ? 1.6 : 2.1;
 
@@ -250,6 +253,14 @@ export function GarmentScene3D({
         camera={{ position: [0, 0, 6.2], fov: 45 }}
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
         className="cursor-grab active:cursor-grabbing"
+        onCreated={({ gl }) => {
+          // Context loss (GPU reset, tab pressure) must degrade to Lite
+          // mode instead of leaving a dead black canvas.
+          gl.domElement.addEventListener("webglcontextlost", (event) => {
+            event.preventDefault();
+            onCanvasError?.();
+          });
+        }}
         onPointerDown={(e) => {
           // Deselect tag when user clicks on background canvas
           if (e.target === e.currentTarget) {

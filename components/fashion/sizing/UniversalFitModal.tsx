@@ -58,7 +58,7 @@ export function UniversalFitModal({ open, product, onClose, onSelectSize }: Univ
   const productVerdict = verdicts.find((v) => v.brandName === productBrand) ?? verdicts[0];
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || typeof window === "undefined") return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };

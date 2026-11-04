@@ -77,6 +77,7 @@ const FIT_OPTIONS: Array<{ id: FitPreference; label: string; hint: string }> = [
 
 function loadStoredInput(): UserFitInput {
   try {
+    if (typeof window === "undefined") return DEFAULT_INPUT;
     const raw = window.sessionStorage.getItem(FIT_STORAGE_KEY);
     if (!raw) return DEFAULT_INPUT;
     const parsed = JSON.parse(raw) as Partial<UserFitInput>;
@@ -139,7 +140,7 @@ export function MaisonblockFittingModal({ open, product, onClose, onSelectSize }
   }, [open, hydrated]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || typeof window === "undefined") return;
     try {
       window.sessionStorage.setItem(FIT_STORAGE_KEY, JSON.stringify(input));
     } catch {
@@ -149,7 +150,7 @@ export function MaisonblockFittingModal({ open, product, onClose, onSelectSize }
 
   // Focus management + Escape to close.
   useEffect(() => {
-    if (!open) return;
+    if (!open || typeof window === "undefined") return;
     closeRef.current?.focus();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();

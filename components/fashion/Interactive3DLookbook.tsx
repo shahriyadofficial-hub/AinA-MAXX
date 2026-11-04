@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { MODEL_PHOTOS, portraitUrl } from "@/lib/media/photos";
+import { canRender3D } from "@/lib/browser/webgl";
+import { WebGLBoundary } from "@/components/system/ErrorBoundary";
 import type { FloatingTag } from "./GarmentScene3D";
 
 // Dynamically import GarmentScene3D with ssr: false for zero SSR issues and performance
@@ -313,7 +315,10 @@ export function Interactive3DLookbook() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [activeTag, setActiveTag] = useState<FloatingTag | null>(null);
   const [isMobile, setIsMobile] = useState(false);
-  const [hasWebGL, setHasWebGL] = useState(true);
+  // Tri-state capability: `null` = not probed yet (never mount the WebGL
+  // canvas before the probe — an optimistic `true` here is what mounted
+  // <Canvas> on GPU-blocklisted devices and crashed the page on load).
+  const [hasWebGL, setHasWebGL] = useState<boolean | null>(null);
   const [forceLiteMode, setForceLiteMode] = useState(false);
   const [bagSuccessMsg, setBagSuccessMsg] = useState<string | null>(null);
   const [isAddingToBag, setIsAddingToBag] = useState(false);
@@ -324,25 +329,11 @@ export function Interactive3DLookbook() {
 
   const currentLook = CURATED_LOOKS[currentIndex];
 
-  // Detect WebGL and viewport size
+  // Detect WebGL and viewport size (client-only; guarded probe, never throws)
   useEffect(() => {
-    const checkWebGL = () => {
-      try {
-        const canvas = document.createElement("canvas");
-        const gl =
-          canvas.getContext("webgl2") ||
-          canvas.getContext("webgl") ||
-          canvas.getContext("experimental-webgl");
-        return !!gl;
-      } catch {
-        return false;
-      }
-    };
+    setHasWebGL(canRender3D());
 
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const webglSupported = checkWebGL() && !mediaQuery.matches;
-    setHasWebGL(webglSupported);
-
+    if (typeof window === "undefined") return;
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
     };
@@ -374,7 +365,7 @@ export function Interactive3DLookbook() {
 
   // 2.5D CSS tilt calculation for lite fallback
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!forceLiteMode && hasWebGL) return;
+    if (!forceLiteMode && hasWebGL !== false) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left - rect.width / 2;
     const y = e.clientY - rect.top - rect.height / 2;
@@ -424,14 +415,14 @@ export function Interactive3DLookbook() {
             type="button"
             onClick={() => setForceLiteMode((prev) => !prev)}
             className={`inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-[11px] font-mono border transition-all ${
-              forceLiteMode || !hasWebGL
+              forceLiteMode || hasWebGL === false
                 ? "bg-white/10 text-white border-white/20"
                 : "bg-aina-cerulean/15 text-aina-light-cerulean border-aina-cerulean/30 shadow-[0_0_10px_rgba(0,123,167,0.3)]"
             }`}
             title="Toggle between Interactive 3D Canvas and 60fps Lite Parallax"
           >
             <Sliders className="w-3 h-3" />
-            <span>{forceLiteMode || !hasWebGL ? "Lite 2.5D Mode" : "3D Canvas Active"}</span>
+            <span>{forceLiteMode || hasWebGL === false ? "Lite 2.5D Mode" : "3D Canvas Active"}</span>
           </button>
 
           {/* Previous / Next Arrows */}
@@ -477,17 +468,42 @@ export function Interactive3DLookbook() {
             </span>
           </div>
 
-          {/* 3D Canvas or 2.5D CSS Parallax */}
-          {!forceLiteMode && hasWebGL ? (
-            <GarmentScene3D
-              color={currentLook.garmentColor}
-              accentColor={currentLook.accentColor}
-              isMobile={isMobile}
-              tags={currentLook.tags}
-              activeTag={activeTag}
-              onSelectTag={(tag) => setActiveTag(tag)}
-              onResetView={() => setActiveTag(null)}
-            />
+          {/* 3D Canvas or 2.5D CSS Parallax. The canvas mounts ONLY after the
+              client probe confirms WebGL; any runtime canvas failure is
+              contained by WebGLBoundary and degrades to the Lite view. */}
+          {!forceLiteMode && hasWebGL === null ? (
+            <div
+              role="status"
+              className="flex h-[460px] w-full flex-col items-center justify-center space-y-3 rounded-3xl bg-aina-graphite/40 sm:h-[540px] lg:h-[620px]"
+            >
+              <div className="h-10 w-10 animate-spin rounded-full border-2 border-aina-rose border-t-transparent" aria-hidden="true" />
+              <p className="text-xs text-neutral-400">Checking 3D support…</p>
+            </div>
+          ) : !forceLiteMode && hasWebGL ? (
+            <WebGLBoundary
+              label="Interactive 3D Lookbook"
+              fallback={
+                <div className="flex h-[460px] w-full flex-col items-center justify-center gap-3 rounded-3xl border border-white/10 bg-aina-graphite/60 px-6 text-center sm:h-[540px] lg:h-[620px]">
+                  <p className="font-display text-sm font-bold text-white">3D unavailable on this device</p>
+                  <p className="max-w-sm text-xs leading-relaxed text-neutral-400">
+                    Your browser could not start WebGL, so the studio switched to Lite mode. Use the Lite 2.5D
+                    toggle above to keep browsing this look.
+                  </p>
+                  <p className="font-bengali text-xs text-neutral-500">এই ডিভাইসে 3D চলছে না — Lite মোড ব্যবহার করুন।</p>
+                </div>
+              }
+            >
+              <GarmentScene3D
+                color={currentLook.garmentColor}
+                accentColor={currentLook.accentColor}
+                isMobile={isMobile}
+                tags={currentLook.tags}
+                activeTag={activeTag}
+                onSelectTag={(tag) => setActiveTag(tag)}
+                onResetView={() => setActiveTag(null)}
+                onCanvasError={() => setHasWebGL(false)}
+              />
+            </WebGLBoundary>
           ) : (
             /* Hybrid Fallback: CSS 3D Parallax Tilt container (Low-End Android & Reduced Motion) */
             <div

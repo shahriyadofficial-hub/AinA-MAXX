@@ -38,6 +38,8 @@ import {
   type RailProduct,
 } from "@/lib/fashion/rail";
 import { useRoutineBag } from "@/lib/fashion/routine-bag";
+import { canRender3D } from "@/lib/browser/webgl";
+import { WebGLBoundary } from "@/components/system/ErrorBoundary";
 
 const ITEM_SPACING = 2.6; // world units between hangers
 const RAIL_Y = 2.05; // height of the metallic bar
@@ -374,6 +376,8 @@ export function RailHangerCarousel() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [inspecting, setInspecting] = useState(false);
   const [quickView, setQuickView] = useState<RailProduct | null>(null);
+  // `false` until the client probe confirms WebGL — the R3F canvas must
+  // never mount optimistically (SSR/hydration + GPU-blocklisted devices).
   const [use3D, setUse3D] = useState(false);
   const [swayDeg, setSwayDeg] = useState(0);
   const dragState = useRef({ offset: 0, velocity: 0, dragging: false });
@@ -383,15 +387,10 @@ export function RailHangerCarousel() {
   const active = RAIL_PRODUCTS[activeIndex];
 
   // WebGL + reduced-motion gate (same contract as Interactive3DLookbook).
+  // Guarded shared probe — returns false instead of throwing when context
+  // creation fails, so the CSS fallback below always wins on bad GPUs.
   useEffect(() => {
-    try {
-      const canvas = document.createElement("canvas");
-      const gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
-      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      setUse3D(Boolean(gl) && !reduced);
-    } catch {
-      setUse3D(false);
-    }
+    setUse3D(canRender3D());
   }, []);
 
   const goTo = useCallback(
@@ -491,19 +490,36 @@ export function RailHangerCarousel() {
         style={{ background: "radial-gradient(ellipse 90% 65% at 50% 0%, #1A1A1D 0%, #0A0A0A 70%)" }}
       >
         {use3D ? (
-          <Canvas
-            dpr={[1, 1.75]}
-            camera={{ position: [0, 0.3, 6.4], fov: 42 }}
-            gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+          <WebGLBoundary
+            label="RAIL 3D carousel"
+            fallback={
+              <RailFallbackTrack
+                activeIndex={activeIndex}
+                onSelect={goTo}
+                onInspect={(p) => p.inStock && setQuickView(p)}
+              />
+            }
           >
-            <RailScene
-              activeIndex={activeIndex}
-              inspecting={inspecting}
-              swayDeg={swayDeg}
-              onTapProduct={handleTapProduct}
-              onBackgroundTap={() => setInspecting(false)}
-            />
-          </Canvas>
+            <Canvas
+              dpr={[1, 1.75]}
+              camera={{ position: [0, 0.3, 6.4], fov: 42 }}
+              gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+              onCreated={({ gl }) => {
+                gl.domElement.addEventListener("webglcontextlost", (event) => {
+                  event.preventDefault();
+                  setUse3D(false);
+                });
+              }}
+            >
+              <RailScene
+                activeIndex={activeIndex}
+                inspecting={inspecting}
+                swayDeg={swayDeg}
+                onTapProduct={handleTapProduct}
+                onBackgroundTap={() => setInspecting(false)}
+              />
+            </Canvas>
+          </WebGLBoundary>
         ) : (
           <RailFallbackTrack
             activeIndex={activeIndex}

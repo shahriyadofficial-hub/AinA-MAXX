@@ -81,6 +81,7 @@ function OrzrDetailOverlay({ item, onClose }: { item: OrzrItem; onClose: () => v
 
   useEffect(() => {
     closeRef.current?.focus();
+    if (typeof window === "undefined") return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
@@ -227,6 +228,7 @@ export function OrzrExperience() {
   const active = items[activeIndex] ?? items[0];
 
   useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     setReducedMotion(mq.matches);
     const onChange = (e: MediaQueryListEvent) => setReducedMotion(e.matches);

@@ -160,6 +160,8 @@ function FashionHubInner() {
   const [active, setActive] = useState<string>("exp-3d");
 
   useEffect(() => {
+    if (typeof window === "undefined" || typeof document === "undefined") return;
+    if (typeof IntersectionObserver === "undefined") return;
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {

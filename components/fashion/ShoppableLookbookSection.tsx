@@ -56,6 +56,7 @@ export function ShoppableLookbookSection() {
   const handleHotspot = useCallback(
     (hotspot: Hotspot) => {
       setActiveProductId(hotspot.productId);
+      if (typeof document === "undefined") return;
       document
         .querySelector(`[data-testid="combo-card-${hotspot.productId}"]`)
         ?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "nearest" });

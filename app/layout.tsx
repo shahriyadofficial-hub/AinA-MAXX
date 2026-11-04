@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/navigation/Navbar";
 import BottomNav from "@/components/navigation/BottomNav";
 import { CoachDrawer } from "@/components/coach/CoachDrawer";
+import { ErrorBoundary } from "@/components/system/ErrorBoundary";
 import { MODEL_PHOTOS, portraitUrl } from "@/lib/media/photos";
 
 const spaceGrotesk = Space_Grotesk({
@@ -25,7 +26,15 @@ const notoSansBengali = Noto_Sans_Bengali({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
+  // Guarded: a malformed NEXT_PUBLIC_APP_URL must never throw at module
+  // evaluation (that crashes every route, including the error pages).
+  metadataBase: (() => {
+    try {
+      return new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000");
+    } catch {
+      return new URL("http://localhost:3000");
+    }
+  })(),
   title: "AinA (Ai∩A MAXX) — Reflect the Prime You",
   description: "AI-guided personal transformation platform for skin, hair, fitness, food, fashion and grooming. Meta Global AI Developer Hackathon.",
   manifest: "/manifest.webmanifest",
@@ -66,19 +75,25 @@ export default function RootLayout({
       className={`${spaceGrotesk.variable} ${inter.variable} ${notoSansBengali.variable} dark`}
     >
       <body className="bg-aina-black text-foreground antialiased selection:bg-aina-rose selection:text-white pb-24 md:pb-12 min-h-screen">
-        {/* Full Desktop & Mobile Responsive Header */}
-        <Navbar />
+        {/* Root Error Boundary: a client throw in any shell widget or page
+            degrades to a recoverable panel instead of a blank screen.
+            (app/error.tsx + app/global-error.tsx cover the route/layout
+            levels above this boundary.) */}
+        <ErrorBoundary label="App shell">
+          {/* Full Desktop & Mobile Responsive Header */}
+          <Navbar />
 
-        {/* Modern Wide Dashboard Container */}
-        <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 min-h-[calc(100vh-140px)]">
-          {children}
-        </main>
+          {/* Modern Wide Dashboard Container */}
+          <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 min-h-[calc(100vh-140px)]">
+            {children}
+          </main>
 
-        {/* Mobile-Only Bottom Navigation Dock */}
-        <BottomNav />
+          {/* Mobile-Only Bottom Navigation Dock */}
+          <BottomNav />
 
-        {/* Slide-out Bilingual AI Coach (muse-spark-1.3) */}
-        <CoachDrawer />
+          {/* Slide-out Bilingual AI Coach (muse-spark-1.3) */}
+          <CoachDrawer />
+        </ErrorBoundary>
       </body>
     </html>
   );

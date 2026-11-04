@@ -92,7 +92,9 @@ export function BarberCard({ card, locale, referenceVisual }: BarberCardProps) {
         </p>
         <button
           type="button"
-          onClick={() => window.print()}
+          onClick={() => {
+            if (typeof window !== "undefined") window.print();
+          }}
           className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-white/20 active:scale-95"
         >
           <Printer className="h-3.5 w-3.5" />

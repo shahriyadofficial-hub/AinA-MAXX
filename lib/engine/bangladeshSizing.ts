@@ -335,6 +335,30 @@ export function brandChartForProduct(brand: string): string {
 export const AINAFIT_PROFILE_KEY = "ainafit_profile";
 const AINAFIT_KEY_KEY = "ainafit_key";
 
+/**
+ * Storage access is guarded end-to-end: these helpers run only from client
+ * event handlers/effects, but a stray server import, a privacy-mode denial
+ * (Safari throws on setItem), or a non-secure context (no WebCrypto) must
+ * degrade to "no saved profile" — never throw into a render.
+ */
+function getLocalStorage(): Storage | null {
+  try {
+    if (typeof window === "undefined" || typeof localStorage === "undefined") return null;
+    return localStorage;
+  } catch {
+    return null;
+  }
+}
+
+function getSubtleCrypto(): SubtleCrypto | null {
+  try {
+    if (typeof crypto === "undefined" || !crypto.subtle) return null;
+    return crypto.subtle;
+  } catch {
+    return null;
+  }
+}
+
 function bufferToBase64(buffer: ArrayBuffer | Uint8Array): string {
   const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
   let binary = "";
@@ -352,18 +376,23 @@ function base64ToBytes(base64: string): Uint8Array {
 }
 
 async function getOrCreateDeviceKey(): Promise<CryptoKey> {
-  const stored = localStorage.getItem(AINAFIT_KEY_KEY);
+  const storage = getLocalStorage();
+  const subtle = getSubtleCrypto();
+  if (!storage || !subtle) {
+    throw new Error("On-device profile storage is unavailable in this environment.");
+  }
+  const stored = storage.getItem(AINAFIT_KEY_KEY);
   if (stored) {
-    return crypto.subtle.importKey("jwk", JSON.parse(stored), { name: "AES-GCM" }, true, [
+    return subtle.importKey("jwk", JSON.parse(stored), { name: "AES-GCM" }, true, [
       "encrypt",
       "decrypt",
     ]);
   }
-  const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, [
+  const key = await subtle.generateKey({ name: "AES-GCM", length: 256 }, true, [
     "encrypt",
     "decrypt",
   ]);
-  localStorage.setItem(AINAFIT_KEY_KEY, JSON.stringify(await crypto.subtle.exportKey("jwk", key)));
+  storage.setItem(AINAFIT_KEY_KEY, JSON.stringify(await subtle.exportKey("jwk", key)));
   return key;
 }
 
@@ -372,26 +401,36 @@ export interface StoredFitProfile extends UserBodyProfileInput {
   consentGranted: boolean;
 }
 
-/** Encrypt + persist the profile on-device. Client-only. */
+/** Encrypt + persist the profile on-device. Client-only; no-ops safely when storage/WebCrypto is unavailable. */
 export async function saveFitProfileLocal(profile: StoredFitProfile): Promise<void> {
-  const key = await getOrCreateDeviceKey();
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const encoded = new TextEncoder().encode(JSON.stringify(profile));
-  const cipher = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encoded);
-  localStorage.setItem(
-    AINAFIT_PROFILE_KEY,
-    JSON.stringify({ iv: bufferToBase64(iv), data: bufferToBase64(cipher) })
-  );
+  const storage = getLocalStorage();
+  const subtle = getSubtleCrypto();
+  if (!storage || !subtle || typeof crypto.getRandomValues !== "function") return;
+  try {
+    const key = await getOrCreateDeviceKey();
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const encoded = new TextEncoder().encode(JSON.stringify(profile));
+    const cipher = await subtle.encrypt({ name: "AES-GCM", iv }, key, encoded);
+    storage.setItem(
+      AINAFIT_PROFILE_KEY,
+      JSON.stringify({ iv: bufferToBase64(iv), data: bufferToBase64(cipher) })
+    );
+  } catch {
+    // Storage denied (private mode / quota) — the in-memory profile still works.
+  }
 }
 
-/** Decrypt the on-device profile; null when absent/corrupt. Client-only. */
+/** Decrypt the on-device profile; null when absent/corrupt/unavailable. Client-only. */
 export async function loadFitProfileLocal(): Promise<StoredFitProfile | null> {
+  const storage = getLocalStorage();
+  const subtle = getSubtleCrypto();
+  if (!storage || !subtle) return null;
   try {
-    const raw = localStorage.getItem(AINAFIT_PROFILE_KEY);
+    const raw = storage.getItem(AINAFIT_PROFILE_KEY);
     if (!raw) return null;
     const { iv, data } = JSON.parse(raw) as { iv: string; data: string };
     const key = await getOrCreateDeviceKey();
-    const plain = await crypto.subtle.decrypt(
+    const plain = await subtle.decrypt(
       { name: "AES-GCM", iv: base64ToBytes(iv) as BufferSource },
       key,
       base64ToBytes(data) as BufferSource
@@ -402,8 +441,14 @@ export async function loadFitProfileLocal(): Promise<StoredFitProfile | null> {
   }
 }
 
-/** One-tap erasure: removes payload AND the device key. Client-only. */
+/** One-tap erasure: removes payload AND the device key. Client-only; never throws. */
 export function eraseFitProfileLocal(): void {
-  localStorage.removeItem(AINAFIT_PROFILE_KEY);
-  localStorage.removeItem(AINAFIT_KEY_KEY);
+  const storage = getLocalStorage();
+  if (!storage) return;
+  try {
+    storage.removeItem(AINAFIT_PROFILE_KEY);
+    storage.removeItem(AINAFIT_KEY_KEY);
+  } catch {
+    // Nothing else can be done — erasure UI feedback must not crash.
+  }
 }
