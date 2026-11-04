@@ -22,6 +22,10 @@ export const ColdOpen: React.FC = () => {
   const exit = useExitFade(durationInFrames);
 
   const lineDraw = interpolate(frame, [8, 60], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  // Opening line must be fully gone before the question enters at frame 168 (00:05.6):
+  // fade + rise over frames 146-166, then unmount (see conditional render below).
+  const openingExit = interpolate(frame, [146, 166], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const openingRise = interpolate(frame, [146, 166], [0, -34], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   const questionP = spring({ frame: frame - 168, fps, config: { damping: 17, stiffness: 80 } });
   const logoP = spring({ frame: frame - 252, fps, config: { damping: 15, stiffness: 65, mass: 1.1 } });
   const logoScale = interpolate(logoP, [0, 1], [2.6, 1]);
@@ -32,40 +36,44 @@ export const ColdOpen: React.FC = () => {
       <GlowBackground />
       <ParticleField count={110} />
 
-      {/* opening line */}
-      <div
-        style={{
-          position: "absolute",
-          top: 330,
-          width: "100%",
-          textAlign: "center",
-          fontFamily: FONT_DISPLAY,
-          fontSize: 64,
-          fontWeight: 700,
-          letterSpacing: -0.5,
-          padding: "0 190px",
-          lineHeight: 1.25,
-        }}
-      >
-        {WORDS.map((w, i) => {
-          const p = spring({ frame: frame - w.delay, fps, config: { damping: 14, stiffness: 130 } });
-          return (
-            <span
-              key={i}
-              style={{
-                display: "inline-block",
-                marginRight: 16,
-                opacity: p,
-                color: w.color,
-                transform: `translateY(${interpolate(p, [0, 1], [26, 0])}px)`,
-                textShadow: w.color === C.rose ? "0 0 34px rgba(255,45,149,0.55)" : undefined,
-              }}
-            >
-              {w.text}
-            </span>
-          );
-        })}
-      </div>
+      {/* opening line — exits 146-166, unmounts before the question enters at 168 */}
+      {frame < 167 && (
+        <div
+          style={{
+            position: "absolute",
+            top: 330,
+            width: "100%",
+            textAlign: "center",
+            fontFamily: FONT_DISPLAY,
+            fontSize: 64,
+            fontWeight: 700,
+            letterSpacing: -0.5,
+            padding: "0 190px",
+            lineHeight: 1.25,
+            opacity: openingExit,
+            transform: `translateY(${openingRise}px)`,
+          }}
+        >
+          {WORDS.map((w, i) => {
+            const p = spring({ frame: frame - w.delay, fps, config: { damping: 14, stiffness: 130 } });
+            return (
+              <span
+                key={i}
+                style={{
+                  display: "inline-block",
+                  marginRight: 16,
+                  opacity: p,
+                  color: w.color,
+                  transform: `translateY(${interpolate(p, [0, 1], [26, 0])}px)`,
+                  textShadow: w.color === C.rose ? "0 0 34px rgba(255,45,149,0.55)" : undefined,
+                }}
+              >
+                {w.text}
+              </span>
+            );
+          })}
+        </div>
+      )}
 
       {/* mirror line */}
       <div

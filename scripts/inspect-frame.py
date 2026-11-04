@@ -95,9 +95,17 @@ def region_stats(img, x0, y0, x1, y1, step=7):
 
 
 if __name__ == "__main__":
+    import os
+    band_mode = os.environ.get("BANDS") == "1"
     for path in sys.argv[1:]:
         img = read_png(path)
         w, h = img[0], img[1]
+        if band_mode:
+            # hook band (top 300-470) vs question band (top 390-580) — overlap zone 390-470
+            print(f"{path}: hook-band={region_stats(img, 300, 300, 1620, 470)}")
+            print(f"{path}: overlap-zone={region_stats(img, 300, 390, 1620, 470)}")
+            print(f"{path}: question-band={region_stats(img, 300, 470, 1620, 580)}")
+            continue
         print(f"\n== {path} {w}x{h} ==")
         print(" center:", region_stats(img, w//2-300, h//2-200, w//2+300, h//2+200))
         print(" topL  :", region_stats(img, 60, 60, 660, 360))
